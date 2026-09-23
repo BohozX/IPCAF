@@ -1,0 +1,238 @@
+name: IPCAF · aprobado
+
+
+on:
+  schedule:
+    - cron: '3,8,13,18,23,28,33,38,43,48,53,58 * * * *'
+  workflow_dispatch:
+
+concurrency:
+  group: ipcaf-main          # el mismo que el diario: nunca los dos a la vez
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  id-token: write
+  pages: write
+
+jobs:
+  aprobado:
+    if: github.event_name != 'schedule' || vars.IPCAF_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Checkout Core privado
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.DEV_VAULT_REPOSITORY }}
+          ref: main
+          ssh-key: ${{ secrets.DEV_VAULT_DEPLOY_KEY }}
+          path: private
+          sparse-checkout: |
+            ${{ secrets.IPCAF_CORE_PATH }}
+          sparse-checkout-cone-mode: true
+          persist-credentials: true
+
+      - name: Identidad de los commits
+        shell: bash
+        run: |
+          set -euo pipefail
+          for repo in . private; do
+            git -C "$repo" config user.name "Daniel Bohoz Oros Trujillo"
+            git -C "$repo" config user.email "283808960+BohozX@users.noreply.github.com"
+          done
+
+      - name: ¿Hay algo aprobado?
+        id: hay
+        shell: bash
+        env:
+          CORE_PATH: ${{ secrets.IPCAF_CORE_PATH }}
+          GH_TOKEN: ${{ secrets.DEV_VAULT_PR_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$CORE_PATH"
+          case "$CORE_PATH" in
+            /*|*..*) echo "Ruta privada no válida" >&2; exit 1 ;;
+          esac
+          if [ -s "private/$CORE_PATH/datos/reportes/propuestas.csv" ]; then
+            echo "si=true" >> $GITHUB_OUTPUT
+            echo "via=pr" >> $GITHUB_OUTPUT
+            echo "aprobaste fusionando la rama: se calcula"
+            exit 0
+          fi
+          if [ -n "${GH_TOKEN:-}" ]; then
+            if ! salida=$(gh issue list \
+                  --repo "${{ secrets.DEV_VAULT_REPOSITORY }}" \
+                  --state open --search "IPCAF decisiones in:title" \
+                  --limit 1 --json number 2>&1); then
+              echo "::error::no pude consultar los issues del vault: $salida"
+              echo "::error::DEV_VAULT_PR_TOKEN necesita permiso de Issues (lectura y escritura)"
+              exit 1
+            fi
+            num=$(jq -r '.[0].number // empty' <<< "$salida")
+            if [ -n "$num" ]; then
+              echo "si=true" >> $GITHUB_OUTPUT
+              echo "via=pagina" >> $GITHUB_OUTPUT
+              echo "issue=$num" >> $GITHUB_OUTPUT
+              echo "mandaste decisiones desde la página (issue #$num): se calcula"
+              exit 0
+            fi
+          fi
+          echo "si=false" >> $GITHUB_OUTPUT
+          echo "nada aprobado esperando"
+
+      - uses: actions/setup-python@v5
+        if: steps.hay.outputs.si == 'true'
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: private/${{ secrets.IPCAF_CORE_PATH }}/requirements.txt
+
+      - name: Instalar dependencias
+        if: steps.hay.outputs.si == 'true'
+        run: pip install -r "private/${{ secrets.IPCAF_CORE_PATH }}/requirements.txt"
+
+      - name: Traer las pendientes de la rama
+        if: steps.hay.outputs.via == 'pagina'
+        shell: bash
+        env:
+          CORE_PATH: ${{ secrets.IPCAF_CORE_PATH }}
+        run: |
+          set -euo pipefail
+          rama=$(git -C private ls-remote --heads origin 'ipcaf/productos-*' \
+                 | awk '{print $2}' | sed 's|refs/heads/||' | sort | tail -1)
+          if [ -z "$rama" ]; then
+            echo "::error::hay decisiones pero no encuentro la rama con propuestas.csv"; exit 1
+          fi
+          echo "  rama: $rama"
+          git -C private fetch -q origin "$rama"
+          git -C private checkout FETCH_HEAD -- "$CORE_PATH/datos/reportes/propuestas.csv"
+          git -C private reset -q -- "$CORE_PATH/datos/reportes/propuestas.csv"
+          wc -l < "private/$CORE_PATH/datos/reportes/propuestas.csv" | xargs echo "  filas:"
+
+      - name: Aplicar las decisiones de la página
+        if: steps.hay.outputs.via == 'pagina'
+        shell: bash
+        env:
+          CORE_PATH: ${{ secrets.IPCAF_CORE_PATH }}
+          GH_TOKEN: ${{ secrets.DEV_VAULT_PR_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh issue view "${{ steps.hay.outputs.issue }}" \
+            --repo "${{ secrets.DEV_VAULT_REPOSITORY }}" --json body --jq '.body' > decisiones.txt
+          cat decisiones.txt
+          python -u "private/$CORE_PATH/codigo/decisiones.py" decisiones.txt
+
+      - name: Aplicar lo que aprobaste
+        if: steps.hay.outputs.si == 'true'
+        working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
+        run: |
+          python -u codigo/clasificador.py incorporar
+          rm -f datos/reportes/propuestas.csv
+
+      - name: Reentrenar
+        if: steps.hay.outputs.si == 'true'
+        working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
+        run: python -u codigo/clasificador.py entrenar
+
+      - name: Restaurar la ventana de 7 dias al vault
+        if: steps.hay.outputs.si == 'true'
+        shell: bash
+        env:
+          CORE_PATH: ${{ secrets.IPCAF_CORE_PATH }}
+        run: |
+          set -euo pipefail
+          mkdir -p "private/$CORE_PATH/datos/dia"
+          n=0
+          for f in precios/*.csv.gz; do
+            [ -e "$f" ] || continue
+            gunzip -c "$f" > "private/$CORE_PATH/datos/dia/$(basename "$f" .gz)"
+            n=$((n+1))
+          done
+          echo "  ventana restaurada al vault: $n dias"
+          ls -1 "private/$CORE_PATH/datos/dia" 2>/dev/null || true
+
+      - name: Calcular y armar la página
+        if: steps.hay.outputs.si == 'true'
+        working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
+        run: |
+          python -u codigo/indices.py
+          python -u codigo/tablero.py
+
+      - name: Devolver los datos al vault
+        if: steps.hay.outputs.si == 'true'
+        shell: bash
+        env:
+          CORE_PATH: ${{ secrets.IPCAF_CORE_PATH }}
+        run: |
+          set -euo pipefail
+          git -C private add -A -- "$CORE_PATH/datos" "$CORE_PATH/config" "$CORE_PATH/modelo"
+          if git -C private diff --cached --quiet; then exit 0; fi
+          git -C private config user.name "Daniel Bohoz Oros Trujillo"
+          git -C private config user.email "283808960+BohozX@users.noreply.github.com"
+          git -C private commit -m "IPCAF: índices $(date -u +%Y-%m-%d)"
+          for intento in 1 2 3; do
+            git -C private pull --rebase origin main
+            if git -C private push origin HEAD:main; then break; fi
+            sleep 5
+          done
+
+      - name: Publicar
+        if: steps.hay.outputs.si == 'true'
+        shell: bash
+        env:
+          CORE_PATH: ${{ secrets.IPCAF_CORE_PATH }}
+        run: |
+          set -euo pipefail
+          cp "private/$CORE_PATH/publico/datos.json" pagina/
+          for f in "private/$CORE_PATH/datos/dia/"*.csv; do
+            [ -e "$f" ] || continue
+            gzip -9 -c "$f" > "precios/$(basename "$f").gz"
+          done
+          corte=$(date -u -d '7 days ago' +%Y-%m-%d)
+          for f in precios/*.csv.gz; do
+            [ -e "$f" ] || continue
+            dia=$(basename "$f" .csv.gz)
+            if [ "$dia" \< "$corte" ]; then rm -f "$f"; echo "  sale de la ventana: $dia"; fi
+          done
+          echo "  ventana pública: $(ls -1 precios/*.csv.gz 2>/dev/null | wc -l) días"
+          git config user.name "Daniel Bohoz Oros Trujillo"
+          git config user.email "283808960+BohozX@users.noreply.github.com"
+          git add pagina precios
+          git diff --cached --quiet || { git commit -m "datos $(date -u +%Y-%m-%d)"; git push; }
+
+      - uses: actions/configure-pages@v5
+        if: steps.hay.outputs.si == 'true'
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.hay.outputs.si == 'true'
+        with:
+          path: pagina
+      - id: deployment
+        if: steps.hay.outputs.si == 'true'
+        uses: actions/deploy-pages@v4
+
+      - name: Cerrar el issue de decisiones
+        if: success() && steps.hay.outputs.via == 'pagina'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.DEV_VAULT_PR_TOKEN }}
+        run: |
+          set -euo pipefail
+          gh issue close "${{ steps.hay.outputs.issue }}" \
+            --repo "${{ secrets.DEV_VAULT_REPOSITORY }}" \
+            --comment "Aplicado. El índice se recalculó y la página está publicada."
+
+      - name: Resumen
+        if: steps.hay.outputs.si == 'true'
+        run: |
+          echo "### Índice actualizado tras tu aprobación" >> $GITHUB_STEP_SUMMARY
+          echo "vía: ${{ steps.hay.outputs.via }}" >> $GITHUB_STEP_SUMMARY
+          echo "https://bohozx.github.io/IPCAF/" >> $GITHUB_STEP_SUMMARY

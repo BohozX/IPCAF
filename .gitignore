@@ -1,0 +1,19 @@
+# datos.json NO se versiona: Pages sirve desde el artefacto, asi que publicarlo
+# no exige guardarlo. Se regenera en cada corrida, asi que no se pierde nada, y
+# ahorra 79 MB al año de blobs que git no borraria nunca.
+pagina/datos.json
+
+# El paquete cifrado de revision lo escribe el flujo en cada corrida y se
+# retira cuando no queda nada pendiente. Versionarlo dejaria en el historial
+# un archivo cifrado por dia, que git no borra nunca.
+pagina/revision.json
+
+# precios/ SI se versiona, aunque cueste. Es la ventana de 7 dias, y tiene que
+# sobrevivir entre corridas: un runner nuevo solo trae el dia que acaba de
+# bajar, los 6 anteriores salen de aca. Comprimidos son 0,68 MB por dia.
+
+__pycache__/
+*.py[cod]
+.venv/
+.DS_Store
+Thumbs.db

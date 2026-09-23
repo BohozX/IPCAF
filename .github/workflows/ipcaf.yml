@@ -1,0 +1,366 @@
+name: IPCAF · índice de precios de alta frecuencia
+
+
+on:
+  workflow_dispatch:
+    inputs:
+      upstream:
+        description: 'Tomar el día del upstream en vez de scrapear'
+        type: boolean
+        default: false
+  schedule:
+    - cron: '7 15 * * *'   # 11:00 en Bolivia (UTC-4)
+    - cron: '7 18 * * *'   # 14:00
+    - cron: '7 21 * * *'   # 17:00  -> este cae al upstream si hace falta
+
+concurrency:
+  group: ipcaf-main
+  cancel-in-progress: false    # dos corridas no deben tocar el histórico a la vez
+
+permissions:
+  contents: write
+  id-token: write
+  pages: write
+
+jobs:
+  revisar:
+    if: github.event_name != 'schedule' || vars.IPCAF_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      seguir: ${{ steps.cerrado.outputs.seguir }}
+
+    steps:
+      - name: Checkout repositorio público
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: ¿El día ya está cerrado?
+        id: cerrado
+        shell: bash
+        run: |
+          set -euo pipefail
+          hoy=$(date -u -d '-4 hours' +%F)
+          echo "día en Bolivia: $hoy"
+
+          if [ "${{ github.event_name }}" != "schedule" ]; then
+            echo "seguir=si" >> $GITHUB_OUTPUT
+            echo "no es una corrida programada: se hace el trabajo completo"
+            exit 0
+          fi
+
+          sitio="https://bohozx.github.io/IPCAF"
+          sello=$(date -u +%s)
+          falta=""
+
+          if [ ! -f "precios/$hoy.csv.gz" ]; then
+            falta="$falta
+          - todavía no están los precios del día"
+          fi
+
+          codigo=$(curl -o /dev/null -s -m 30 -w '%{http_code}' \
+                   "$sitio/revision.json?$sello" || true)
+          case "${codigo:-000}" in
+            404) ;;
+            200) falta="$falta
+          - hay productos esperando tu visto bueno" ;;
+            *)   falta="$falta
+          - no pude consultar la página de revisión (HTTP $codigo)" ;;
+          esac
+
+          ultimo=""
+          if curl -fsSL -m 60 -o publicado.json "$sitio/datos.json?$sello"; then
+            ultimo=$(python3 -c "import json;print(json.load(open('publicado.json',encoding='utf-8'))['fechas_d'][-1])" 2>/dev/null || true)
+          fi
+          rm -f publicado.json
+          if [ "$ultimo" != "$hoy" ]; then
+            falta="$falta
+          - el índice publicado llega hasta ${ultimo:-ningún día}"
+          fi
+
+          if [ -n "$falta" ]; then
+            echo "seguir=si" >> $GITHUB_OUTPUT
+            echo "el día $hoy no está cerrado:$falta"
+            {
+              echo "### Se hace el trabajo del día $hoy"
+              echo "$falta"
+            } >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "seguir=no" >> $GITHUB_OUTPUT
+            echo "el día $hoy ya está cerrado: precios bajados, nada pendiente e índice al día"
+            {
+              echo "### El día $hoy ya estaba cerrado"
+              echo
+              echo "Los precios ya estaban bajados, no quedaba nada esperando"
+              echo "aprobación y el índice publicado ya llegaba hasta hoy."
+              echo "No se rehizo nada."
+            } >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  dia:
+    needs: revisar
+    if: needs.revisar.outputs.seguir == 'si'
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - name: Checkout repositorio público
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Checkout Core privado
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.DEV_VAULT_REPOSITORY }}
+          ref: main
+          ssh-key: ${{ secrets.DEV_VAULT_DEPLOY_KEY }}
+          path: private
+          sparse-checkout: |
+            ${{ secrets.IPCAF_CORE_PATH }}
+          sparse-checkout-cone-mode: true
+          persist-credentials: true
+
+      - name: Identidad de los commits
+        shell: bash
+        run: |
+          set -euo pipefail
+          for repo in . private; do
+            git -C "$repo" config user.name "Daniel Bohoz Oros Trujillo"
+            git -C "$repo" config user.email "283808960+BohozX@users.noreply.github.com"
+          done
+
+      - name: Validar configuración privada
+        shell: bash
+        env:
+          CORE_PATH: ${{ secrets.IPCAF_CORE_PATH }}
+        run: |
+          set -euo pipefail
+          test -n "$CORE_PATH"
+          case "$CORE_PATH" in
+            /*|*..*) echo "Ruta privada no válida" >&2; exit 1 ;;
+          esac
+          test -f "private/$CORE_PATH/codigo/ipcaf.py"
+          echo "core en private/$CORE_PATH"
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: private/${{ secrets.IPCAF_CORE_PATH }}/requirements.txt
+
+      - name: Instalar dependencias
+        run: pip install -r "private/${{ secrets.IPCAF_CORE_PATH }}/requirements.txt"
+
+      - name: Aplicar lo que aprobaste
+        id: aprobado
+        working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
+        run: |
+          if [ -s datos/reportes/propuestas.csv ]; then
+            echo "hay propuestas aprobadas: se incorporan"
+            python -u codigo/clasificador.py incorporar
+            rm -f datos/reportes/propuestas.csv
+            echo "hubo=si" >> $GITHUB_OUTPUT
+          else
+            echo "nada aprobado esperando"
+            echo "hubo=no" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Reentrenar tras incorporar
+        if: steps.aprobado.outputs.hubo == 'si'
+        working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
+        run: python -u codigo/clasificador.py entrenar
+
+      - name: Restaurar la ventana de 7 dias al vault
+        shell: bash
+        env:
+          CORE_PATH: ${{ secrets.IPCAF_CORE_PATH }}
+        run: |
+          set -euo pipefail
+          mkdir -p "private/$CORE_PATH/datos/dia"
+          n=0
+          for f in precios/*.csv.gz; do
+            [ -e "$f" ] || continue
+            gunzip -c "$f" > "private/$CORE_PATH/datos/dia/$(basename "$f" .gz)"
+            n=$((n+1))
+          done
+          echo "  ventana restaurada al vault: $n dias"
+          ls -1 "private/$CORE_PATH/datos/dia" 2>/dev/null || true
+
+      - name: Bajar el día
+        working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
+        run: |
+          if [ "${{ inputs.upstream }}" = "true" ]; then
+            python -u codigo/scraper.py --upstream
+          elif [ "${{ github.event.schedule }}" = "7 21 * * *" ]; then
+            python -u codigo/scraper.py --con-respaldo
+          else
+            python -u codigo/scraper.py
+          fi
+
+      - name: Consolidar y revisar
+        working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
+        run: python -u codigo/ingesta.py
+
+      - name: Clasificar los productos nuevos
+        id: clasificar
+        working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
+        run: |
+          python -u codigo/clasificador.py clasificar
+          echo "nuevos=$(python -u codigo/pendientes.py)" >> $GITHUB_OUTPUT
+          echo "total=$(python -u codigo/pendientes.py --total)" >> $GITHUB_OUTPUT
+
+      - name: Calcular el índice
+        if: steps.clasificar.outputs.nuevos == '0'
+        working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
+        run: |
+          python -u codigo/indices.py
+          python -u codigo/tablero.py
+
+      - name: Devolver los datos al vault
+        shell: bash
+        env:
+          CORE_PATH: ${{ secrets.IPCAF_CORE_PATH }}
+        run: |
+          set -euo pipefail
+          git -C private add -A -- "$CORE_PATH/datos" "$CORE_PATH/config" \
+                                   "$CORE_PATH/modelo" || true
+          if [ "${{ steps.aprobado.outputs.hubo }}" != "si" ]; then
+            git -C private reset -q -- "$CORE_PATH/datos/reportes/propuestas.csv" || true
+          fi
+          if git -C private diff --cached --quiet; then
+            echo "el vault ya está al día"
+            exit 0
+          fi
+          git -C private config user.name "Daniel Bohoz Oros Trujillo"
+          git -C private config user.email "283808960+BohozX@users.noreply.github.com"
+          git -C private commit -m "IPCAF: datos $(date -u +%Y-%m-%d)"
+          for intento in 1 2 3; do
+            git -C private pull --rebase origin main
+            if git -C private push origin HEAD:main; then break; fi
+            sleep 5
+          done
+
+      - name: Pedir tu visto bueno por los productos nuevos
+        if: steps.clasificar.outputs.total != '0'
+        shell: bash
+        env:
+          CORE_PATH: ${{ secrets.IPCAF_CORE_PATH }}
+          GH_TOKEN: ${{ secrets.DEV_VAULT_PR_TOKEN }}
+        run: |
+          set -euo pipefail
+          rama="ipcaf/productos-$(date -u +%Y-%m-%d)"
+          git -C private checkout -B "$rama"
+          git -C private add -f -- "$CORE_PATH/datos/reportes/propuestas.csv"
+          git -C private commit -m "IPCAF: ${{ steps.clasificar.outputs.nuevos }} productos nuevos para revisar"
+          git -C private cat-file -e "$rama:$CORE_PATH/datos/reportes/propuestas.csv" || {
+            echo "::error::la rama $rama no quedó con propuestas.csv" >&2; exit 1; }
+          git -C private push -f origin "$rama"
+          python -u "private/$CORE_PATH/codigo/pendientes.py" --cuerpo > cuerpo.md
+          titulo="IPCAF · ${{ steps.clasificar.outputs.nuevos }} productos nuevos · $(date -u +%d-%m-%Y)"
+
+          if [ -n "${GH_TOKEN:-}" ]; then
+            gh pr create --repo "${{ secrets.DEV_VAULT_REPOSITORY }}" \
+              --title "$titulo" --body-file cuerpo.md --base main --head "$rama" \
+              || gh pr edit "$rama" --repo "${{ secrets.DEV_VAULT_REPOSITORY }}" \
+                   --title "$titulo" --body-file cuerpo.md
+          else
+            {
+              echo "### ${{ steps.clasificar.outputs.nuevos }} productos nuevos esperando tu visto bueno"
+              echo ""
+              echo "La rama \`$rama\` ya está en el vault con \`propuestas.csv\`."
+              echo "No se pudo abrir el Pull Request solo porque falta el secret"
+              echo "\`DEV_VAULT_PR_TOKEN\`. Aprobar es fusionar esa rama a \`main\`:"
+              echo ""
+              echo "https://github.com/${{ secrets.DEV_VAULT_REPOSITORY }}/compare/main...$rama"
+              echo ""
+              cat cuerpo.md
+            } >> $GITHUB_STEP_SUMMARY
+          fi
+
+      - name: Publicar las pendientes cifradas
+        shell: bash
+        env:
+          CORE_PATH: ${{ secrets.IPCAF_CORE_PATH }}
+          IPCAF_CLAVE_REVISION: ${{ secrets.IPCAF_CLAVE_REVISION }}
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.clasificar.outputs.total }}" = "0" ]; then
+            rm -f pagina/revision.json
+            echo "nada pendiente: se retira el paquete de revisión"
+            exit 0
+          fi
+          if [ -z "${IPCAF_CLAVE_REVISION:-}" ]; then
+            echo "::warning::falta el secret IPCAF_CLAVE_REVISION; la página de revisión se queda sin datos"
+            exit 0
+          fi
+          python -u "private/$CORE_PATH/codigo/publicar_revision.py" pagina/revision.json
+
+      - name: Preparar lo público
+        id: publico
+        shell: bash
+        env:
+          CORE_PATH: ${{ secrets.IPCAF_CORE_PATH }}
+        run: |
+          set -euo pipefail
+          if [ -f "private/$CORE_PATH/publico/datos.json" ]; then
+            cp "private/$CORE_PATH/publico/datos.json" pagina/
+            echo "índice nuevo: se publica"
+          else
+            if curl -fsSL -o pagina/datos.json "https://bohozx.github.io/IPCAF/datos.json"; then
+              echo "sin índice nuevo: se reutiliza el datos.json ya publicado"
+            else
+              echo "sin índice nuevo y todavía no hay uno publicado: el tablero queda vacío"
+            fi
+          fi
+          for f in "private/$CORE_PATH/datos/dia/"*.csv; do
+            [ -e "$f" ] || continue
+            gzip -9 -c "$f" > "precios/$(basename "$f").gz"
+          done
+          corte=$(date -u -d '7 days ago' +%Y-%m-%d)
+          for f in precios/*.csv.gz; do
+            [ -e "$f" ] || continue
+            dia=$(basename "$f" .csv.gz)
+            if [ "$dia" \< "$corte" ]; then rm -f "$f"; echo "  sale de la ventana: $dia"; fi
+          done
+          echo "  ventana pública: $(ls -1 precios/*.csv.gz 2>/dev/null | wc -l) días"
+
+      - name: Publicar
+        shell: bash
+        run: |
+          set -euo pipefail
+          git config user.name "Daniel Bohoz Oros Trujillo"
+          git config user.email "283808960+BohozX@users.noreply.github.com"
+          git add pagina precios
+          if git diff --cached --quiet; then
+            echo "sin cambios que publicar"
+          else
+            git commit -m "datos $(date -u +%Y-%m-%d)"
+            git push
+          fi
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: pagina
+      - id: deployment
+        uses: actions/deploy-pages@v4
+
+      - name: Resumen
+        if: always()
+        shell: bash
+        run: |
+          if [ "${{ steps.clasificar.outputs.total }}" != "0" ]; then
+            echo "### ${{ steps.clasificar.outputs.nuevos }} productos esperando tu visto bueno" >> $GITHUB_STEP_SUMMARY
+            echo "El índice NO se calculó. Aprobá el Pull Request en Dev-Vault:" >> $GITHUB_STEP_SUMMARY
+            echo "https://github.com/${{ secrets.DEV_VAULT_REPOSITORY }}/pulls" >> $GITHUB_STEP_SUMMARY
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "Al aprobarlo, la siguiente corrida (14:00 o 17:00) lo incorpora y calcula." >> $GITHUB_STEP_SUMMARY
+          else
+            echo "### Índice actualizado" >> $GITHUB_STEP_SUMMARY
+            echo "https://bohozx.github.io/IPCAF/" >> $GITHUB_STEP_SUMMARY
+          fi

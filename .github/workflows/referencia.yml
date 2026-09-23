@@ -1,0 +1,142 @@
+name: Referencia mensual
+
+
+on:
+  schedule:
+    - cron: '23 13 * * *'   # 09:30 en Bolivia, antes del índice
+  workflow_dispatch:
+    inputs:
+      forzar:
+        description: 'Rearmar la referencia aunque no haya mes nuevo'
+        type: boolean
+        default: false
+
+concurrency:
+  group: ipcaf-referencia
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+  id-token: write
+  pages: write
+
+jobs:
+  referencia:
+    if: github.event_name != 'schedule' || vars.IPCAF_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Checkout Core privado
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.DEV_VAULT_REPOSITORY }}
+          ref: main
+          ssh-key: ${{ secrets.DEV_VAULT_DEPLOY_KEY }}
+          path: private
+          sparse-checkout: |
+            ${{ secrets.IPCAF_CORE_PATH }}
+          sparse-checkout-cone-mode: true
+          persist-credentials: true
+
+      - name: Identidad de los commits
+        shell: bash
+        run: |
+          set -euo pipefail
+          for repo in . private; do
+            git -C "$repo" config user.name "Daniel Bohoz Oros Trujillo"
+            git -C "$repo" config user.email "283808960+BohozX@users.noreply.github.com"
+          done
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: private/${{ secrets.IPCAF_CORE_PATH }}/requirements.txt
+
+      - run: pip install -r "private/${{ secrets.IPCAF_CORE_PATH }}/requirements.txt"
+
+      - name: Buscar mes nuevo
+        id: buscar
+        working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
+        run: |
+          if [ "${{ inputs.forzar }}" = "true" ]; then
+            rm -f config/referencia_divisiones.csv
+            echo "forzado: se rearma la referencia desde cero"
+          fi
+          salida=$(python -u codigo/referencia.py --bajar --verificar)
+          echo "$salida"
+          if echo "$salida" | grep -q '^NUEVO$'; then
+            echo "nuevo=si" >> $GITHUB_OUTPUT
+          else
+            echo "nuevo=no" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Regenerar la página
+        if: steps.buscar.outputs.nuevo == 'si'
+        working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
+        run: python -u codigo/tablero.py
+
+      - name: Devolver la referencia al vault
+        if: steps.buscar.outputs.nuevo == 'si'
+        shell: bash
+        env:
+          CORE_PATH: ${{ secrets.IPCAF_CORE_PATH }}
+        run: |
+          set -euo pipefail
+          git -C private add -- "$CORE_PATH/config/referencia_divisiones.csv" \
+                                "$CORE_PATH/config/referencia_nacional.csv" \
+                                "$CORE_PATH/config/ponderadores_ciudad.csv"
+          if git -C private diff --cached --quiet; then exit 0; fi
+          git -C private config user.name "Daniel Bohoz Oros Trujillo"
+          git -C private config user.email "283808960+BohozX@users.noreply.github.com"
+          git -C private commit -m "IPCAF: referencia $(date -u +%Y-%m)"
+          for intento in 1 2 3; do
+            git -C private pull --rebase origin main
+            if git -C private push origin HEAD:main; then break; fi
+            sleep 5
+          done
+
+      - name: Publicar
+        if: steps.buscar.outputs.nuevo == 'si'
+        shell: bash
+        run: |
+          set -euo pipefail
+          cp "private/${{ secrets.IPCAF_CORE_PATH }}/publico/datos.json" pagina/
+          if curl -fsSL -m 60 -o pagina/revision.json \
+               "https://bohozx.github.io/IPCAF/revision.json?$(date -u +%s)"; then
+            echo "  se conserva el paquete de revisión que estaba publicado"
+          else
+            rm -f pagina/revision.json
+            echo "  no había paquete de revisión publicado"
+          fi
+          git config user.name "Daniel Bohoz Oros Trujillo"
+          git config user.email "283808960+BohozX@users.noreply.github.com"
+          git add pagina
+          git diff --cached --quiet || { git commit -m "referencia $(date -u +%Y-%m)"; git push; }
+
+      - uses: actions/configure-pages@v5
+        if: steps.buscar.outputs.nuevo == 'si'
+      - uses: actions/upload-pages-artifact@v3
+        if: steps.buscar.outputs.nuevo == 'si'
+        with:
+          path: pagina
+      - id: deployment
+        if: steps.buscar.outputs.nuevo == 'si'
+        uses: actions/deploy-pages@v4
+
+      - name: Resumen
+        if: always()
+        run: |
+          if [ "${{ steps.buscar.outputs.nuevo }}" = "si" ]; then
+            echo "### Hay un mes nuevo en la referencia" >> $GITHUB_STEP_SUMMARY
+          else
+            echo "Sin novedad: la referencia no cambió." >> $GITHUB_STEP_SUMMARY
+          fi

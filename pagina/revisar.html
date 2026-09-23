@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>IPCAF · revisar</title>
+<meta name="robots" content="noindex">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:opsz,wght@9..40,400;9..40,500;9..40,600;9..40,700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --m0:#0000ef; --acento:#0000ef; --acento2:#0179a3;
+  --fondo:#c2e0f6; --fondo2:#d9edfb;
+  --panel:rgba(255,255,255,.72); --panel2:rgba(255,255,255,.96);
+  --borde:rgba(10,60,140,.17); --borde2:rgba(10,60,140,.3);
+  --tinta:#091725; --tinta2:#3f4f60; --tinta3:#67788a;
+  --ok:#0b6b3a; --mal:#a3261f;
+  --sombra:0 12px 34px rgba(8,44,71,.12);
+}
+*{box-sizing:border-box}
+body{margin:0;color:var(--tinta);min-height:100vh;
+  font:15px/1.55 "DM Sans",ui-sans-serif,system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+  background:linear-gradient(180deg,var(--fondo2) 0%,var(--fondo) 46%,var(--fondo) 100%);
+  background-attachment:fixed}
+.env{max-width:1040px;margin:0 auto;padding:22px 18px 120px}
+h1{margin:0;font-size:21px;letter-spacing:-.01em}
+.lema{font-size:10.5px;letter-spacing:.18em;text-transform:uppercase;color:var(--tinta3);
+  font-weight:600;margin-top:3px}
+.sub{color:var(--tinta2);font-size:13px;margin:10px 0 0;max-width:72ch}
+.mono{font-family:"JetBrains Mono",ui-monospace,Consolas,monospace;font-variant-numeric:tabular-nums}
+
+.puerta{max-width:440px;margin:12vh auto;background:var(--panel);border:1px solid var(--borde);
+  border-radius:16px;padding:26px 24px;box-shadow:var(--sombra);backdrop-filter:blur(12px)}
+.puerta h1{font-size:19px}
+input,select,textarea{font:inherit}
+.campo{display:block;width:100%;font-size:15px;padding:11px 13px;border-radius:11px;
+  border:1px solid var(--borde2);background:#fff;color:var(--tinta);margin-top:14px}
+.campo:focus{outline:none;border-color:var(--acento2);box-shadow:0 0 0 3px rgba(1,121,163,.2)}
+.boton{font:inherit;font-size:14px;font-weight:600;padding:11px 18px;border-radius:11px;
+  border:0;background:var(--acento);color:#fff;cursor:pointer;margin-top:14px;width:100%}
+.boton:hover{filter:brightness(1.12)}
+.boton[disabled]{opacity:.45;cursor:not-allowed}
+.boton.sec{background:none;color:var(--acento);border:1px solid var(--borde2);width:auto;
+  padding:9px 14px}
+.error{color:var(--mal);font-size:13px;margin-top:12px;min-height:1.2em}
+
+.barra{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:20px 0 0}
+.buscar{flex:1 1 240px;margin-top:0}
+.pildora{font:inherit;font-size:12.5px;font-weight:600;padding:7px 14px;border-radius:99px;
+  cursor:pointer;border:1px solid var(--borde2);background:var(--panel);color:var(--tinta2)}
+.pildora[aria-pressed="true"]{background:var(--acento);border-color:transparent;color:#fff}
+
+.ficha{background:var(--panel);border:1px solid var(--borde);border-radius:14px;
+  padding:16px 18px;margin-top:12px;backdrop-filter:blur(10px)}
+.ficha.decidida{border-color:var(--ok);background:rgba(255,255,255,.86)}
+.ficha.fuera{opacity:.55}
+.nombre{font-weight:600;font-size:14.5px;line-height:1.35}
+.meta{font-size:11.5px;color:var(--tinta3);margin-top:3px}
+.meta b{color:var(--tinta2);font-weight:600}
+.fila{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+@media (max-width:640px){ .fila{grid-template-columns:1fr} }
+.et{font-size:9.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--tinta3);
+  font-weight:700;display:block;margin-bottom:5px}
+.sel{width:100%;font-size:14px;padding:10px 11px;border-radius:10px;
+  border:1px solid var(--borde2);background:#fff;color:var(--tinta)}
+.codigo{font-size:11.5px;color:var(--tinta3);margin-top:10px}
+.codigo b{color:var(--tinta)}
+.sug{font-size:12px;color:var(--tinta2);margin-top:9px;display:flex;gap:8px;flex-wrap:wrap;
+  align-items:center}
+.chip{font:inherit;font-size:12px;font-weight:600;padding:5px 11px;border-radius:99px;
+  cursor:pointer;border:1px solid var(--borde2);background:#fff;color:var(--acento)}
+.chip:hover{border-color:var(--acento)}
+
+.pie{position:fixed;left:0;right:0;bottom:0;z-index:30;padding:12px 18px;
+  background:var(--panel2);border-top:1px solid var(--borde2);
+  box-shadow:0 -8px 24px rgba(8,44,71,.1);backdrop-filter:blur(12px)}
+.pie .env{padding:0;display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+.cuenta{font-size:13px;color:var(--tinta2);flex:1 1 auto}
+.cuenta b{color:var(--tinta)}
+.oculto{display:none}
+.aviso{font-size:12px;color:var(--tinta2);background:rgba(255,255,255,.7);
+  border:1px solid var(--borde);border-radius:11px;padding:11px 13px;margin-top:14px}
+</style>
+</head>
+<body>
+
+<div class="puerta" id="puerta">
+  <h1>IPCAF · revisar</h1>
+  <div class="lema">productos nuevos por validar</div>
+  <p class="sub">Lo que hay acá está cifrado. Sin la clave es ruido, incluso para quien
+     abra esta página.</p>
+  <input class="campo" type="password" id="clave" placeholder="clave de revisión"
+         autocomplete="current-password" enterkeyhint="go">
+  <label class="sub" style="display:flex;gap:8px;align-items:center;margin-top:12px">
+    <input type="checkbox" id="recordar"> recordar en este dispositivo
+  </label>
+  <button class="boton" id="abrir">Abrir</button>
+  <div class="error" id="err"></div>
+</div>
+
+<div class="env oculto" id="app">
+  <h1>IPCAF · revisar</h1>
+  <div class="lema" id="fecha"></div>
+  <p class="sub">Elegí a qué producto del INE va cada uno. El <b>código</b> no se escribe:
+     sale solo del producto que elijas.</p>
+
+  <div class="barra">
+    <input class="campo buscar" id="buscar" placeholder="buscar producto…" enterkeyhint="search">
+    <button class="pildora" id="fPiden" aria-pressed="true">Los que piden criterio</button>
+    <button class="pildora" id="fTodos" aria-pressed="false">Todos</button>
+  </div>
+
+  <div id="lista"></div>
+</div>
+
+<div class="pie oculto" id="pie">
+  <div class="env">
+    <div class="cuenta" id="cuenta"></div>
+    <button class="boton sec" id="copiar">Copiar decisiones</button>
+    <button class="boton" style="width:auto" id="enviar">Enviar decisiones</button>
+  </div>
+</div>
+
+<script>
+const $ = s => document.querySelector(s);
+const VAULT = "BohozX/Dev-Vault";
+const FUERA = "(NO VA)";
+const NO_VA = "__NO__";
+
+let D = null;                 // el paquete descifrado
+let decision = {};            // id -> {ine, variedad}
+let soloPiden = true;
+
+const deB64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
+
+async function descifrar(sobre, clave){
+  const mat = await crypto.subtle.importKey(
+    "raw", new TextEncoder().encode(clave), "PBKDF2", false, ["deriveKey"]);
+  const k = await crypto.subtle.deriveKey(
+    {name:"PBKDF2", salt:deB64(sobre.salt), iterations:sobre.iter, hash:"SHA-256"},
+    mat, {name:"AES-GCM", length:256}, false, ["decrypt"]);
+  const claro = await crypto.subtle.decrypt(
+    {name:"AES-GCM", iv:deB64(sobre.iv)}, k, deB64(sobre.ct));
+  return JSON.parse(new TextDecoder().decode(claro));
+}
+
+async function abrir(){
+  const clave = $("#clave").value.trim();
+  if(!clave) return;
+  $("#err").textContent = "descifrando…";
+  $("#abrir").disabled = true;
+  try{
+    const r = await fetch("revision.json", {cache:"no-cache"});
+    if(!r.ok) throw new Error("no encontré revision.json (¿hay algo pendiente?)");
+    const sobre = await r.json();
+    D = await descifrar(sobre, clave);
+    if($("#recordar").checked){
+      try{ localStorage.setItem("ipcaf-clave", clave); }catch(e){}
+    }
+    arrancar();
+  }catch(e){
+    const roto = e.name === "OperationError" || !e.message;
+    $("#err").textContent = roto ? "la clave no abre este archivo" : e.message;
+    $("#abrir").disabled = false;
+  }
+}
+$("#abrir").onclick = abrir;
+$("#clave").onkeydown = e => { if(e.key === "Enter") abrir(); };
+
+(() => {                       // si ya la guardaste, se prueba sola
+  let g = null;
+  try{ g = localStorage.getItem("ipcaf-clave"); }catch(e){}
+  if(g){ $("#clave").value = g; $("#recordar").checked = true; abrir(); }
+})();
+
+function arrancar(){
+  $("#puerta").classList.add("oculto");
+  $("#app").classList.remove("oculto");
+  $("#pie").classList.remove("oculto");
+  $("#fecha").textContent = `paquete del ${D.generado} · ${D.pendientes.length} productos`;
+  for(const x of D.pendientes)
+    decision[x.id] = {ine: x.ine === FUERA ? NO_VA : x.ine, variedad: x.var};
+  pintar();
+}
+
+const PIDEN = e => e === "revisar: poca confianza";
+const PRODUCTOS = () => Object.keys(D.catalogo).sort((a,b)=>a.localeCompare(b,"es"));
+
+function visibles(){
+  const q = $("#buscar").value.trim().toLowerCase();
+  return D.pendientes.filter(x => {
+    if(soloPiden && !PIDEN(x.est)) return false;
+    if(!q) return true;
+    return (x.p + " " + (x.ine||"") + " " + (x.cat||"")).toLowerCase().includes(q);
+  });
+}
+
+function opciones(sel, lista, elegido){
+  sel.innerHTML = lista.map(v =>
+    `<option value="${v.replace(/"/g,"&quot;")}"${v===elegido?" selected":""}>${v}</option>`).join("");
+}
+
+function pintar(){
+  const p = visibles();
+  $("#lista").innerHTML = p.length ? "" :
+    `<div class="aviso">No hay productos que mostrar con este filtro.</div>`;
+
+  for(const x of p){
+    const d = decision[x.id];
+    const esNo = d.ine === NO_VA;
+    const info = D.catalogo[d.ine] || {};
+    const f = document.createElement("div");
+    f.className = "ficha" + (esNo ? " fuera" : "");
+    f.innerHTML = `
+      <div class="nombre">${x.p}</div>
+      <div class="meta">${x.c}${x.cat ? " · " + x.cat : ""} ·
+        el modelo propuso <b>${x.ine}</b>${x.conf!=null ? ` (${Math.round(x.conf*100)}%)` : ""}</div>
+      <div class="fila">
+        <div><span class="et">Producto del INE</span>
+          <select class="sel" data-p="${x.id}"></select></div>
+        <div><span class="et">Variedad</span>
+          <select class="sel" data-v="${x.id}"></select></div>
+      </div>
+      <div class="codigo" data-c="${x.id}"></div>
+      <div class="sug" data-s="${x.id}"></div>`;
+    $("#lista").appendChild(f);
+
+    const selP = f.querySelector(`[data-p="${x.id}"]`);
+    opciones(selP, [NO_VA].concat(PRODUCTOS()), d.ine);
+    selP.querySelector(`option[value="${NO_VA}"]`).textContent = "— no va a la canasta —";
+    selP.onchange = () => {
+      decision[x.id].ine = selP.value;
+      const vs = (D.catalogo[selP.value] || {}).vars || [];
+      decision[x.id].variedad = vs.includes(decision[x.id].variedad) ? decision[x.id].variedad : vs[0];
+      pintar();
+    };
+
+    const selV = f.querySelector(`[data-v="${x.id}"]`);
+    const vs = info.vars || [];
+    if(esNo || vs.length === 0){
+      selV.innerHTML = `<option>—</option>`;
+      selV.disabled = true;
+    }else{
+      opciones(selV, vs, d.variedad);
+      selV.disabled = vs.length === 1;
+      selV.onchange = () => { decision[x.id].variedad = selV.value; };
+    }
+
+    f.querySelector(`[data-c="${x.id}"]`).innerHTML = esNo
+      ? "Queda registrado como que no entra a la canasta."
+      : `Código <b class="mono">${info.cod ?? "—"}</b> · división <b>${info.div ?? "—"}</b>
+         <span style="color:var(--tinta3)">— salen solos del producto elegido</span>`;
+
+    const sug = f.querySelector(`[data-s="${x.id}"]`);
+    if(x.alt && x.alt !== d.ine && D.catalogo[x.alt]){
+      sug.innerHTML = `<span>el modelo también consideró:</span>`;
+      const b = document.createElement("button");
+      b.className = "chip";
+      b.textContent = x.alt;
+      b.onclick = () => {
+        decision[x.id].ine = x.alt;
+        decision[x.id].variedad = (D.catalogo[x.alt].vars || [])[0];
+        pintar();
+      };
+      sug.appendChild(b);
+    }
+  }
+  cuenta();
+}
+
+function cambiadas(){
+  return D.pendientes.filter(x => {
+    const d = decision[x.id];
+    const orig = x.ine === FUERA ? NO_VA : x.ine;
+    return d.ine !== orig || (d.variedad || "") !== (x.var || "");
+  });
+}
+
+function cuenta(){
+  const n = cambiadas().length;
+  $("#cuenta").innerHTML = n
+    ? `<b>${n}</b> cambiaste de lo que propuso el modelo · el resto va tal cual`
+    : `todo va como lo propuso el modelo`;
+}
+
+$("#buscar").oninput = pintar;
+$("#fPiden").onclick = () => { soloPiden = true; marca(); pintar(); };
+$("#fTodos").onclick = () => { soloPiden = false; marca(); pintar(); };
+function marca(){
+  $("#fPiden").setAttribute("aria-pressed", soloPiden);
+  $("#fTodos").setAttribute("aria-pressed", !soloPiden);
+}
+
+function texto(){
+  const c = cambiadas();
+  const L = [`IPCAF decisiones ${D.generado}`, ""];
+  for(const x of c){
+    const d = decision[x.id];
+    L.push(d.ine === NO_VA
+      ? `${x.id} ${x.c} = NO`
+      : `${x.id} ${x.c} = ${d.ine} | ${d.variedad || ""}`);
+  }
+  if(!c.length) L.push("(sin cambios: se acepta todo lo que propuso el modelo)");
+  return L.join("\n");
+}
+
+$("#copiar").onclick = async () => {
+  try{
+    await navigator.clipboard.writeText(texto());
+    $("#copiar").textContent = "copiado";
+    setTimeout(() => $("#copiar").textContent = "Copiar decisiones", 1600);
+  }catch(e){
+    prompt("Copiá esto:", texto());
+  }
+};
+
+$("#enviar").onclick = () => {
+  const cuerpo = texto();
+  const u = `https://github.com/${VAULT}/issues/new?title=`
+    + encodeURIComponent(`IPCAF decisiones ${D.generado}`)
+    + "&body=" + encodeURIComponent(cuerpo);
+  if(u.length > 7000){
+    navigator.clipboard.writeText(cuerpo).catch(()=>{});
+    alert("Son demasiadas decisiones para el enlace. Ya las copié: pegalas en el issue que se abre.");
+    open(`https://github.com/${VAULT}/issues/new`, "_blank");
+    return;
+  }
+  open(u, "_blank");
+};
+</script>
+</body>
+</html>
