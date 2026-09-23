@@ -222,6 +222,8 @@ jobs:
           python -u codigo/tablero.py
 
       - name: Devolver los datos al vault
+        id: devolver
+        continue-on-error: true
         shell: bash
         env:
           CORE_PATH: ${{ secrets.IPCAF_CORE_PATH }}
@@ -239,11 +241,16 @@ jobs:
           git -C private config user.name "Daniel Bohoz Oros Trujillo"
           git -C private config user.email "283808960+BohozX@users.noreply.github.com"
           git -C private commit -m "IPCAF: datos $(date -u +%Y-%m-%d)"
+          guardado=no
           for intento in 1 2 3; do
             git -C private pull --rebase origin main
-            if git -C private push origin HEAD:main; then break; fi
+            if git -C private push origin HEAD:main; then guardado=si; break; fi
             sleep 5
           done
+          if [ "$guardado" != si ]; then
+            echo "::error::no se pudo guardar en el vault tras 3 intentos"
+            exit 1
+          fi
 
       - name: Pedir tu visto bueno por los productos nuevos
         if: steps.clasificar.outputs.total != '0'
@@ -364,3 +371,9 @@ jobs:
             echo "### Índice actualizado" >> $GITHUB_STEP_SUMMARY
             echo "https://bohozx.github.io/IPCAF/" >> $GITHUB_STEP_SUMMARY
           fi
+
+      - name: Avisar si el vault no se guardó
+        if: steps.devolver.outcome == 'failure'
+        run: |
+          echo "::error::los datos del día NO se guardaron en el vault. La página y la ventana pública sí se publicaron; la corrida queda en rojo para que se reintente."
+          exit 1
