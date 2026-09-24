@@ -212,12 +212,11 @@ jobs:
         working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
         run: |
           python -u codigo/clasificador.py clasificar
-          echo "nuevos=$(python -u codigo/pendientes.py)" >> $GITHUB_OUTPUT
           echo "total=$(python -u codigo/pendientes.py --total)" >> $GITHUB_OUTPUT
 
       - name: Calcular el índice
         id: calcular
-        if: steps.clasificar.outputs.nuevos == '0'
+        if: steps.clasificar.outputs.total == '0'
         continue-on-error: true
         working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
         run: |
@@ -266,7 +265,7 @@ jobs:
           rama="ipcaf/productos-$(date -u +%Y-%m-%d)"
           git -C private checkout -B "$rama"
           git -C private add -f -- "$CORE_PATH/datos/reportes/propuestas.csv"
-          git -C private commit -m "IPCAF: ${{ steps.clasificar.outputs.nuevos }} productos nuevos para revisar"
+          git -C private commit -m "IPCAF: ${{ steps.clasificar.outputs.total }} productos nuevos para revisar"
           git -C private cat-file -e "$rama:$CORE_PATH/datos/reportes/propuestas.csv" || {
             echo "::error::la rama $rama no quedó con propuestas.csv" >&2; exit 1; }
           git -C private push -f origin "$rama"
@@ -280,7 +279,7 @@ jobs:
             fi
           done
           python -u "private/$CORE_PATH/codigo/pendientes.py" --cuerpo > cuerpo.md
-          titulo="IPCAF · ${{ steps.clasificar.outputs.nuevos }} productos nuevos · $(date -u +%d-%m-%Y)"
+          titulo="IPCAF · ${{ steps.clasificar.outputs.total }} productos nuevos · $(date -u +%d-%m-%Y)"
 
           if [ -n "${GH_TOKEN:-}" ]; then
             gh pr create --repo "${{ secrets.DEV_VAULT_REPOSITORY }}" \
@@ -289,7 +288,7 @@ jobs:
                    --title "$titulo" --body-file cuerpo.md
           else
             {
-              echo "### ${{ steps.clasificar.outputs.nuevos }} productos nuevos esperando tu visto bueno"
+              echo "### ${{ steps.clasificar.outputs.total }} productos nuevos esperando tu visto bueno"
               echo ""
               echo "La rama \`$rama\` ya está en el vault con \`propuestas.csv\`."
               echo "No se pudo abrir el Pull Request solo porque falta el secret"
@@ -382,7 +381,7 @@ jobs:
         shell: bash
         run: |
           if [ "${{ steps.clasificar.outputs.total }}" != "0" ]; then
-            echo "### ${{ steps.clasificar.outputs.nuevos }} productos esperando tu visto bueno" >> $GITHUB_STEP_SUMMARY
+            echo "### ${{ steps.clasificar.outputs.total }} productos esperando tu visto bueno" >> $GITHUB_STEP_SUMMARY
             echo "El índice NO se calculó. Decidí en la página de revisión:" >> $GITHUB_STEP_SUMMARY
             echo "https://bohozx.github.io/IPCAF/revisar.html" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
