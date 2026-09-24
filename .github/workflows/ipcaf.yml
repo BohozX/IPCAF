@@ -270,6 +270,15 @@ jobs:
           git -C private cat-file -e "$rama:$CORE_PATH/datos/reportes/propuestas.csv" || {
             echo "::error::la rama $rama no quedó con propuestas.csv" >&2; exit 1; }
           git -C private push -f origin "$rama"
+          for vieja in $(git -C private ls-remote --heads origin 'ipcaf/productos-*' \
+                           | awk '{print $2}' | sed 's|refs/heads/||'); do
+            [ "$vieja" = "$rama" ] && continue
+            if git -C private push -q origin --delete "$vieja"; then
+              echo "  rama vieja borrada: $vieja (la de hoy trae todo lo pendiente)"
+            else
+              echo "  no pude borrar $vieja; queda para la próxima"
+            fi
+          done
           python -u "private/$CORE_PATH/codigo/pendientes.py" --cuerpo > cuerpo.md
           titulo="IPCAF · ${{ steps.clasificar.outputs.nuevos }} productos nuevos · $(date -u +%d-%m-%Y)"
 
