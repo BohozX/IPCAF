@@ -170,11 +170,6 @@ jobs:
             echo "hubo=no" >> $GITHUB_OUTPUT
           fi
 
-      - name: Reentrenar tras incorporar
-        if: steps.aprobado.outputs.hubo == 'si'
-        working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
-        run: python -u codigo/clasificador.py entrenar
-
       - name: Restaurar la ventana de 7 dias al vault
         shell: bash
         env:
@@ -205,6 +200,12 @@ jobs:
       - name: Consolidar y revisar
         working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
         run: python -u codigo/ingesta.py
+
+      - name: Reentrenar si hay etiquetas nuevas
+        id: reentrenar
+        continue-on-error: true
+        working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
+        run: python -u codigo/clasificador.py entrenar
 
       - name: Clasificar los productos nuevos
         id: clasificar
@@ -373,10 +374,10 @@ jobs:
         run: |
           if [ "${{ steps.clasificar.outputs.total }}" != "0" ]; then
             echo "### ${{ steps.clasificar.outputs.nuevos }} productos esperando tu visto bueno" >> $GITHUB_STEP_SUMMARY
-            echo "El índice NO se calculó. Aprobá el Pull Request en Dev-Vault:" >> $GITHUB_STEP_SUMMARY
-            echo "https://github.com/${{ secrets.DEV_VAULT_REPOSITORY }}/pulls" >> $GITHUB_STEP_SUMMARY
+            echo "El índice NO se calculó. Decidí en la página de revisión:" >> $GITHUB_STEP_SUMMARY
+            echo "https://bohozx.github.io/IPCAF/revisar.html" >> $GITHUB_STEP_SUMMARY
             echo "" >> $GITHUB_STEP_SUMMARY
-            echo "Al aprobarlo, la siguiente corrida (14:00 o 17:00) lo incorpora y calcula." >> $GITHUB_STEP_SUMMARY
+            echo "Al mandar tus decisiones, el índice se recalcula y se publica solo en unos minutos." >> $GITHUB_STEP_SUMMARY
           else
             echo "### Índice actualizado" >> $GITHUB_STEP_SUMMARY
             echo "https://bohozx.github.io/IPCAF/" >> $GITHUB_STEP_SUMMARY
@@ -392,4 +393,10 @@ jobs:
         if: ${{ !cancelled() && steps.calcular.outcome == 'failure' }}
         run: |
           echo "::error::el índice de hoy NO se publicó: hay precios con saltos de 10x o más sin revisar en datos/reportes/precios_sospechosos.csv, o el cálculo falló. La página sigue con el índice anterior."
+          exit 1
+
+      - name: Avisar si el modelo no se reentrenó
+        if: ${{ !cancelled() && steps.reentrenar.outcome == 'failure' }}
+        run: |
+          echo "::error::el modelo NO se pudo reentrenar con tus últimas decisiones; hoy clasificó con el modelo anterior. La próxima corrida lo vuelve a intentar."
           exit 1

@@ -101,6 +101,7 @@ jobs:
         run: pip install -r "private/${{ secrets.IPCAF_CORE_PATH }}/requirements.txt"
 
       - name: Traer las pendientes de la rama
+        id: rama
         if: steps.hay.outputs.via == 'pagina'
         shell: bash
         env:
@@ -113,6 +114,7 @@ jobs:
             echo "::error::hay decisiones pero no encuentro la rama con propuestas.csv"; exit 1
           fi
           echo "  rama: $rama"
+          echo "rama=$rama" >> $GITHUB_OUTPUT
           git -C private fetch -q origin "$rama"
           git -C private checkout FETCH_HEAD -- "$CORE_PATH/datos/reportes/propuestas.csv"
           git -C private reset -q -- "$CORE_PATH/datos/reportes/propuestas.csv"
@@ -139,7 +141,9 @@ jobs:
           rm -f datos/reportes/propuestas.csv
 
       - name: Reentrenar
+        id: reentrenar
         if: steps.hay.outputs.si == 'true'
+        continue-on-error: true
         working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
         run: python -u codigo/clasificador.py entrenar
 
@@ -252,6 +256,24 @@ jobs:
             --repo "${{ secrets.DEV_VAULT_REPOSITORY }}" \
             --comment "Aplicado. El índice se recalculó y la página está publicada."
 
+      - name: Cerrar el PR de la rama
+        if: success() && steps.hay.outputs.via == 'pagina' && steps.devolver.outcome != 'failure'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.DEV_VAULT_PR_TOKEN }}
+          RAMA: ${{ steps.rama.outputs.rama }}
+        run: |
+          set -euo pipefail
+          n=$(gh pr list --repo "${{ secrets.DEV_VAULT_REPOSITORY }}" --head "$RAMA" \
+                --state open --json number --jq '.[0].number // empty')
+          if [ -n "$n" ]; then
+            gh pr close "$n" --repo "${{ secrets.DEV_VAULT_REPOSITORY }}" \
+              --comment "Decidido desde la página: las decisiones ya se aplicaron. Este PR no se fusiona."
+            echo "PR #$n cerrado sin fusionar"
+          else
+            echo "no había PR abierto para $RAMA"
+          fi
+
       - name: Resumen
         if: steps.hay.outputs.si == 'true'
         run: |
@@ -269,4 +291,10 @@ jobs:
         if: ${{ !cancelled() && steps.calcular.outcome == 'failure' }}
         run: |
           echo "::error::el índice NO se recalculó con tus decisiones: hay precios con saltos de 10x o más sin revisar en datos/reportes/precios_sospechosos.csv, o el cálculo falló. La página sigue con el índice anterior."
+          exit 1
+
+      - name: Avisar si el modelo no se reentrenó
+        if: ${{ !cancelled() && steps.reentrenar.outcome == 'failure' }}
+        run: |
+          echo "::error::tus decisiones se aplicaron, pero el modelo NO se pudo reentrenar. La próxima corrida diaria lo vuelve a intentar."
           exit 1
