@@ -214,7 +214,7 @@ jobs:
           fi
           for f in "private/$CORE_PATH/datos/dia/"*.csv; do
             [ -e "$f" ] || continue
-            gzip -9 -c "$f" > "precios/$(basename "$f").gz"
+            gzip -9 -n -c "$f" > "precios/$(basename "$f").gz"
           done
           corte=$(date -u -d '7 days ago' +%Y-%m-%d)
           for f in precios/*.csv.gz; do
