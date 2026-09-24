@@ -215,7 +215,9 @@ jobs:
           echo "total=$(python -u codigo/pendientes.py --total)" >> $GITHUB_OUTPUT
 
       - name: Calcular el índice
+        id: calcular
         if: steps.clasificar.outputs.nuevos == '0'
+        continue-on-error: true
         working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
         run: |
           python -u codigo/indices.py
@@ -312,6 +314,7 @@ jobs:
         shell: bash
         env:
           CORE_PATH: ${{ secrets.IPCAF_CORE_PATH }}
+          VAULT: ${{ steps.devolver.outcome }}
         run: |
           set -euo pipefail
           if [ -f "private/$CORE_PATH/publico/datos.json" ]; then
@@ -332,7 +335,14 @@ jobs:
           for f in precios/*.csv.gz; do
             [ -e "$f" ] || continue
             dia=$(basename "$f" .csv.gz)
-            if [ "$dia" \< "$corte" ]; then rm -f "$f"; echo "  sale de la ventana: $dia"; fi
+            [ "$dia" \< "$corte" ] || continue
+            if [ -e "private/$CORE_PATH/datos/dia/$dia.csv" ]; then
+              echo "  se queda en la ventana: $dia (todavía no entró al parquet)"
+            elif [ "$VAULT" != "success" ]; then
+              echo "  se queda en la ventana: $dia (el vault no confirmó que lo guardó)"
+            else
+              rm -f "$f"; echo "  sale de la ventana: $dia"
+            fi
           done
           echo "  ventana pública: $(ls -1 precios/*.csv.gz 2>/dev/null | wc -l) días"
 
@@ -376,4 +386,10 @@ jobs:
         if: steps.devolver.outcome == 'failure'
         run: |
           echo "::error::los datos del día NO se guardaron en el vault. La página y la ventana pública sí se publicaron; la corrida queda en rojo para que se reintente."
+          exit 1
+
+      - name: Avisar si el índice no se publicó
+        if: ${{ !cancelled() && steps.calcular.outcome == 'failure' }}
+        run: |
+          echo "::error::el índice de hoy NO se publicó: hay precios con saltos de 10x o más sin revisar en datos/reportes/precios_sospechosos.csv, o el cálculo falló. La página sigue con el índice anterior."
           exit 1

@@ -161,7 +161,9 @@ jobs:
           ls -1 "private/$CORE_PATH/datos/dia" 2>/dev/null || true
 
       - name: Calcular y armar la página
+        id: calcular
         if: steps.hay.outputs.si == 'true'
+        continue-on-error: true
         working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
         run: |
           python -u codigo/indices.py
@@ -197,9 +199,15 @@ jobs:
         shell: bash
         env:
           CORE_PATH: ${{ secrets.IPCAF_CORE_PATH }}
+          VAULT: ${{ steps.devolver.outcome }}
         run: |
           set -euo pipefail
-          cp "private/$CORE_PATH/publico/datos.json" pagina/
+          if [ -f "private/$CORE_PATH/publico/datos.json" ]; then
+            cp "private/$CORE_PATH/publico/datos.json" pagina/
+          else
+            curl -fsSL -o pagina/datos.json "https://bohozx.github.io/IPCAF/datos.json"
+            echo "sin índice nuevo: se reutiliza el datos.json ya publicado"
+          fi
           for f in "private/$CORE_PATH/datos/dia/"*.csv; do
             [ -e "$f" ] || continue
             gzip -9 -c "$f" > "precios/$(basename "$f").gz"
@@ -208,7 +216,14 @@ jobs:
           for f in precios/*.csv.gz; do
             [ -e "$f" ] || continue
             dia=$(basename "$f" .csv.gz)
-            if [ "$dia" \< "$corte" ]; then rm -f "$f"; echo "  sale de la ventana: $dia"; fi
+            [ "$dia" \< "$corte" ] || continue
+            if [ -e "private/$CORE_PATH/datos/dia/$dia.csv" ]; then
+              echo "  se queda en la ventana: $dia (todavía no entró al parquet)"
+            elif [ "$VAULT" != "success" ]; then
+              echo "  se queda en la ventana: $dia (el vault no confirmó que lo guardó)"
+            else
+              rm -f "$f"; echo "  sale de la ventana: $dia"
+            fi
           done
           echo "  ventana pública: $(ls -1 precios/*.csv.gz 2>/dev/null | wc -l) días"
           git config user.name "Daniel Bohoz Oros Trujillo"
@@ -248,4 +263,10 @@ jobs:
         if: steps.devolver.outcome == 'failure'
         run: |
           echo "::error::tus decisiones NO se guardaron en el vault. El issue queda abierto y la próxima corrida las vuelve a aplicar."
+          exit 1
+
+      - name: Avisar si el índice no se recalculó
+        if: ${{ !cancelled() && steps.calcular.outcome == 'failure' }}
+        run: |
+          echo "::error::el índice NO se recalculó con tus decisiones: hay precios con saltos de 10x o más sin revisar en datos/reportes/precios_sospechosos.csv, o el cálculo falló. La página sigue con el índice anterior."
           exit 1
