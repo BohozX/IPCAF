@@ -8,6 +8,10 @@ on:
         description: 'Tomar el día del upstream en vez de scrapear'
         type: boolean
         default: false
+      forzar:
+        description: 'Volver a bajar el día de hoy aunque ya exista (pisa la captura anterior)'
+        type: boolean
+        default: false
   schedule:
     - cron: '7 15 * * *'   # 11:00 en Bolivia (UTC-4)
     - cron: '7 18 * * *'   # 14:00
@@ -189,12 +193,16 @@ jobs:
       - name: Bajar el día
         working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
         run: |
+          extra=""
+          if [ "${{ inputs.forzar }}" = "true" ]; then
+            extra="--forzar"
+          fi
           if [ "${{ inputs.upstream }}" = "true" ]; then
-            python -u codigo/scraper.py --upstream
+            python -u codigo/scraper.py --upstream $extra
           elif [ "${{ github.event.schedule }}" = "7 21 * * *" ]; then
-            python -u codigo/scraper.py --con-respaldo
+            python -u codigo/scraper.py --con-respaldo $extra
           else
-            python -u codigo/scraper.py
+            python -u codigo/scraper.py $extra
           fi
 
       - name: Consolidar y revisar
