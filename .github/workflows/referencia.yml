@@ -71,7 +71,11 @@ jobs:
             rm -f config/referencia_divisiones.csv
             echo "forzado: se rearma la referencia desde cero"
           fi
-          salida=$(python -u codigo/referencia.py --bajar --verificar)
+          if ! salida=$(python -u codigo/referencia.py --bajar --verificar); then
+            echo "$salida"
+            echo "::error::no se pudo revisar la referencia; el motivo está en las líneas de arriba"
+            exit 1
+          fi
           echo "$salida"
           if echo "$salida" | grep -q '^NUEVO$'; then
             echo "nuevo=si" >> $GITHUB_OUTPUT
