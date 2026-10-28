@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Precios e inflación</title>
-<meta name="description" content="Precios e inflación en Bolivia: inflación oficial por departamento y por división, e Índice de Precios de Consumo de Alta Frecuencia con precios diarios de La Paz, Cochabamba y Santa Cruz. Fuente: Instituto Nacional de Estadística (INE) y estimación propia.">
+<title data-i18n="Precios e inflación">Precios e inflación</title>
+<meta name="description" content="Precios e inflación en Bolivia: inflación oficial por departamento y por división, e Índice de Precios de Consumo de Alta Frecuencia con precios diarios de La Paz, Cochabamba y Santa Cruz. Fuente: Instituto Nacional de Estadística (INE) y estimación propia." data-i18n-content="descripcion">
 <meta name="theme-color" content="#000000">
 <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24'%3E%3Crect width='24' height='24' rx='5' fill='%23000'/%3E%3Cpath d='M12 4.5 18.5 8.2 12 12 5.5 8.2z' fill='%23fff'/%3E%3Cpath d='M5.5 8.2V15.8L12 19.5V12zM18.5 8.2V15.8L12 19.5V12z' fill='none' stroke='%23fff' stroke-width='1.3' stroke-linejoin='round'/%3E%3C/svg%3E">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -52,6 +52,11 @@ a{color:inherit;text-decoration:none}
 .marca{display:flex;align-items:center;gap:10px;font-weight:600;font-size:15px;letter-spacing:-.01em;white-space:nowrap}
 .marca svg{width:22px;height:22px;display:block}
 .nav-links{display:flex;gap:2px;margin-left:auto;margin-right:6px}
+.idioma{display:inline-flex;align-items:center;margin-right:8px}
+.idioma button{font:500 13.5px/1 var(--sans);padding:6px 9px;border:0;background:none;color:var(--tinta3);cursor:pointer;transition:color .2s}
+.idioma button+button{border-left:1px solid var(--borde2)}
+.idioma button:hover{color:var(--tinta2)}
+.idioma button[aria-pressed="true"]{color:var(--tinta)}
 .nav-links a{font-size:14px;color:var(--tinta2);padding:8px 12px;border-radius:8px;white-space:nowrap;transition:color .2s,background-color .2s}
 .nav-in .corto{display:none}
 @media (max-width:1000px){.nav-in .largo{display:none}.nav-in .corto{display:inline}}
@@ -60,7 +65,7 @@ a{color:inherit;text-decoration:none}
   border-radius:8px;font:500 14px/1 var(--sans);letter-spacing:-.01em;border:1px solid transparent;
   cursor:pointer;white-space:nowrap;background:var(--tinta);color:#000;transition:background-color .2s}
 .btn:hover{background:var(--suave)}
-@media (max-width:780px){.nav-links{display:none}.nav-in .btn{margin-left:auto}}
+@media (max-width:780px){.nav-links{display:none}.idioma{margin-left:auto}}
 
 .grad{background:var(--plata-texto);background-size:220% 100%;background-position:30% 0;
   -webkit-background-clip:text;background-clip:text;color:transparent}
@@ -337,15 +342,16 @@ tbody tr:hover{background:rgba(33,146,196,.07);box-shadow:inset 2px 0 0 var(--az
 
 <header class="nav">
   <div class="env nav-in">
-    <a class="marca" href="https://bohozx.github.io/" aria-label="Inicio">
+    <a class="marca" href="https://bohozx.github.io/" aria-label="Inicio" data-i18n-aria="Inicio">
       <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.8 20 7.4 12 12 4 7.4z" fill="currentColor"/><path d="M4 7.4v9.2l8 4.6V12zM20 7.4v9.2l-8 4.6V12z" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linejoin="round"/></svg>
       <span>Daniel Oros</span>
     </a>
-    <nav class="nav-links" aria-label="Secciones">
-      <a href="#inflacion">Por departamento</a>
-      <a href="#divisiones-ine">Por división</a>
+    <nav class="nav-links" aria-label="Secciones" data-i18n-aria="Secciones">
+      <a href="#inflacion" data-i18n="Por departamento">Por departamento</a>
+      <a href="#divisiones-ine" data-i18n="Por división">Por división</a>
     </nav>
-    <a class="btn" href="#diario"><span class="largo">Índice de Precios de Consumo de Alta Frecuencia</span><span class="corto">IPCAF</span></a>
+    <div class="idioma" id="idioma" role="group" aria-label="Idioma" data-i18n-aria="Idioma"><button type="button" data-l="en" aria-pressed="false">EN</button><button type="button" data-l="es" aria-pressed="true">ES</button></div>
+    <a class="btn" href="#diario"><span class="largo" data-i18n="Índice de Precios de Consumo de Alta Frecuencia">Índice de Precios de Consumo de Alta Frecuencia</span><span class="corto">IPCAF</span></a>
   </div>
 </header>
 
@@ -356,8 +362,8 @@ tbody tr:hover{background:rgba(33,146,196,.07);box-shadow:inset 2px 0 0 var(--az
     <canvas class="portada-picos" id="portada-picos" aria-hidden="true"></canvas>
   </div>
   <div class="env portada-txt">
-    <h1 class="grad">Precios e inflación</h1>
-    <p>La inflación de Bolivia en un solo lugar: el dato oficial del INE para los nueve
+    <h1 class="grad" data-i18n="Precios e inflación">Precios e inflación</h1>
+    <p data-i18n-html="portadaTexto">La inflación de Bolivia en un solo lugar: el dato oficial del INE para los nueve
       departamentos y las doce divisiones del IPC desde 2008, y un índice propio que sigue
       los precios <b>día a día</b> en La Paz, Cochabamba y Santa Cruz.</p>
     <div class="tablero" id="tarjetas"></div>
@@ -368,14 +374,14 @@ tbody tr:hover{background:rgba(33,146,196,.07);box-shadow:inset 2px 0 0 var(--az
 <section class="sec" id="inflacion">
   <div class="env">
     <div class="sec-cab">
-      <p class="kicker">Dato oficial del INE</p>
-      <h2 class="grad">Inflación por departamento</h2>
+      <p class="kicker" data-i18n="Dato oficial del INE">Dato oficial del INE</p>
+      <h2 class="grad" data-i18n="Inflación por departamento">Inflación por departamento</h2>
     </div>
 
     <div class="mandos">
-      <div class="seg" id="mapa-med" role="group" aria-label="Medida"></div>
-      <div class="campo"><span class="etq">División</span><div class="sel" id="mapa-div"></div></div>
-      <div class="campo"><span class="etq">Mes</span><div class="sel" id="mapa-mes"></div></div>
+      <div class="seg" id="mapa-med" role="group" aria-label="Medida" data-i18n-aria="Medida"></div>
+      <div class="campo"><span class="etq" data-i18n="División">División</span><div class="sel" id="mapa-div"></div></div>
+      <div class="campo"><span class="etq" data-i18n="Mes">Mes</span><div class="sel" id="mapa-mes"></div></div>
     </div>
 
     <div class="mapa-rejilla">
@@ -399,17 +405,17 @@ tbody tr:hover{background:rgba(33,146,196,.07);box-shadow:inset 2px 0 0 var(--az
 <section class="sec" id="divisiones-ine">
   <div class="env">
     <div class="sec-cab">
-      <p class="kicker">Dato oficial del INE</p>
-      <h2 class="grad">Inflación por ciudad y división</h2>
+      <p class="kicker" data-i18n="Dato oficial del INE">Dato oficial del INE</p>
+      <h2 class="grad" data-i18n="Inflación por ciudad y división">Inflación por ciudad y división</h2>
     </div>
     <div class="mandos">
-      <div class="seg" id="mk-med" role="group" aria-label="Medida"></div>
-      <div class="campo"><span class="etq">Ciudad</span><div class="sel" id="dv-ciudad"></div></div>
-      <div class="campo"><span class="etq">Mes</span><div class="sel" id="dv-mes"></div></div>
+      <div class="seg" id="mk-med" role="group" aria-label="Medida" data-i18n-aria="Medida"></div>
+      <div class="campo"><span class="etq" data-i18n="Ciudad">Ciudad</span><div class="sel" id="dv-ciudad"></div></div>
+      <div class="campo"><span class="etq" data-i18n="Mes">Mes</span><div class="sel" id="dv-mes"></div></div>
     </div>
     <div class="nacional mk-gen" id="dv-gen"><div class="et"></div><span class="v">—</span><div class="p"></div></div>
     <svg class="mekko" id="mekko" height="380" role="img"
-      aria-label="Treemap de las 12 divisiones del IPC según su variación"></svg>
+      aria-label="Treemap de las 12 divisiones del IPC según su variación" data-i18n-aria="Treemap de las 12 divisiones del IPC según su variación"></svg>
     <p class="nota" id="dv-nota"></p>
   </div>
 </section>
@@ -418,27 +424,27 @@ tbody tr:hover{background:rgba(33,146,196,.07);box-shadow:inset 2px 0 0 var(--az
   <div class="env">
     <div class="sec-cab">
       <p class="kicker">IPCAF</p>
-      <h2 class="grad">Índice de Precios de Consumo de Alta Frecuencia</h2>
+      <h2 class="grad" data-i18n="Índice de Precios de Consumo de Alta Frecuencia">Índice de Precios de Consumo de Alta Frecuencia</h2>
     </div>
 
     <div class="mando">
       <div class="controles">
-        <div class="campo" id="campo-ciudad"><span class="etq">Ciudad</span>
+        <div class="campo" id="campo-ciudad"><span class="etq" data-i18n="Ciudad">Ciudad</span>
           <div class="sel" id="ciudades"></div></div>
-        <div class="campo campo-ancho"><span class="etq">División</span>
+        <div class="campo campo-ancho"><span class="etq" data-i18n="División">División</span>
           <div class="sel" id="divisiones"></div></div>
-        <div class="campo"><span class="etq">Índice</span>
+        <div class="campo"><span class="etq" data-i18n="Índice">Índice</span>
           <div class="sel" id="metodos"></div></div>
-        <div class="campo" id="campo-ambito"><span class="etq">INE de</span>
+        <div class="campo" id="campo-ambito"><span class="etq" data-i18n="INE de">INE de</span>
           <div class="sel" id="ambito"></div></div>
-        <div class="campo campo-ancho" id="campo-refine"><span class="etq">Comparar contra</span>
+        <div class="campo campo-ancho" id="campo-refine"><span class="etq" data-i18n="Comparar contra">Comparar contra</span>
           <div class="sel" id="refine"></div></div>
-        <div class="campo"><span class="etq">Período</span>
+        <div class="campo"><span class="etq" data-i18n="Período">Período</span>
           <div class="sel" id="rangos"></div></div>
-        <div class="campo campo-ancho" id="campo-fechas" hidden><span class="etq">Fechas exactas</span>
+        <div class="campo campo-ancho" id="campo-fechas" hidden><span class="etq" data-i18n="Fechas exactas">Fechas exactas</span>
           <div class="fechas">
-            <input type="date" id="desde" aria-label="desde">
-            <input type="date" id="hasta" aria-label="hasta">
+            <input type="date" id="desde" aria-label="desde" data-i18n-aria="desde">
+            <input type="date" id="hasta" aria-label="hasta" data-i18n-aria="hasta">
           </div></div>
       </div>
     </div>
@@ -449,57 +455,57 @@ tbody tr:hover{background:rgba(33,146,196,.07);box-shadow:inset 2px 0 0 var(--az
 
     <section class="bloque">
       <div class="cab">
-        <h3>Variación a 12 meses, día a día</h3>
-        <span class="vivo"><i></i>diario</span>
+        <h3 data-i18n="Variación a 12 meses, día a día">Variación a 12 meses, día a día</h3>
+        <span class="vivo"><i></i><span data-i18n="diario">diario</span></span>
       </div>
       <div class="leyenda" id="l1"></div>
-      <svg id="g1" height="430" role="img" aria-label="Variación a 12 meses diaria"
+      <svg id="g1" height="430" role="img" aria-label="Variación a 12 meses diaria" data-i18n-aria="Variación a 12 meses diaria"
         data-desc="Cada día contra el mismo día del año pasado: la lectura más fina, y la única
           que aprovecha tener dato diario. El INE publica una vez al mes, así que sus puntos son
           mensuales; esta línea se mueve todos los días y reacciona antes, pero también se sacude
-          con una oferta puntual o un feriado."></svg>
+          con una oferta puntual o un feriado." data-i18n-desc="g1Desc"></svg>
     </section>
 
     <section class="bloque">
       <div class="cab">
-        <h3>Cómo viene el mes, día a día</h3>
-        <span class="vivo"><i></i>en curso</span>
+        <h3 data-i18n="Cómo viene el mes, día a día">Cómo viene el mes, día a día</h3>
+        <span class="vivo"><i></i><span data-i18n="en curso">en curso</span></span>
       </div>
       <div class="leyenda" id="l5"></div>
-      <svg id="g5" height="380" role="img" aria-label="Acumulado del mes, día a día"
+      <svg id="g5" height="380" role="img" aria-label="Acumulado del mes, día a día" data-i18n-aria="Acumulado del mes, día a día"
         data-desc="Desde el cierre del mes anterior hasta cada día. Arranca de cero cada primero
           y va sumando, así que se ve como dientes de sierra: cada diente es un mes. El día que el
-          mes cierra vale exactamente lo mismo que el punto mensual del gráfico siguiente."></svg>
+          mes cierra vale exactamente lo mismo que el punto mensual del gráfico siguiente." data-i18n-desc="g5Desc"></svg>
     </section>
 
     <section class="bloque">
       <div class="cab">
-        <h3>Variación mensual</h3>
+        <h3 data-i18n="Variación mensual">Variación mensual</h3>
       </div>
       <div class="leyenda" id="l2"></div>
-      <svg id="g2" height="380" role="img" aria-label="Variación mensual"
+      <svg id="g2" height="380" role="img" aria-label="Variación mensual" data-i18n-aria="Variación mensual"
         data-desc="Fin de mes contra fin del mes anterior, que es la que publica el INE. Cierre
           contra cierre, sin mirar cuántos días trae el mes: abril compara su día 30 contra el 31
           de marzo, y mayo su día 31 contra el 30 de abril. El último punto es provisional hasta
-          que el mes cierre."></svg>
+          que el mes cierre." data-i18n-desc="g2Desc"></svg>
     </section>
 
     <section class="bloque">
       <div class="cab">
-        <h3>Variación a 12 meses, comparable</h3>
+        <h3 data-i18n="Variación a 12 meses, comparable">Variación a 12 meses, comparable</h3>
       </div>
       <div class="leyenda" id="l3"></div>
-      <svg id="g3" height="380" role="img" aria-label="Variación a 12 meses comparable"></svg>
+      <svg id="g3" height="380" role="img" aria-label="Variación a 12 meses comparable" data-i18n-aria="Variación a 12 meses comparable"></svg>
     </section>
 
     <section class="bloque">
-      <h3>Divisiones, ordenadas por cuánto subieron</h3>
+      <h3 data-i18n="Divisiones, ordenadas por cuánto subieron">Divisiones, ordenadas por cuánto subieron</h3>
       <p class="sub" id="sd"></p>
       <div class="tabla-ancha"><table id="td" class="td"></table></div>
     </section>
 
     <section class="bloque">
-      <h3>Productos que se movieron</h3>
+      <h3 data-i18n="Productos que se movieron">Productos que se movieron</h3>
       <div class="cab cab-sub">
         <p class="sub" id="sp"></p>
         <div class="sel" id="perprod" hidden></div>
@@ -517,6 +523,281 @@ tbody tr:hover{background:rgba(33,146,196,.07);box-shadow:inset 2px 0 0 var(--az
 <script>
 const $ = s => document.querySelector(s);
 
+const TEXTOS = {
+  "es": {
+    "Precios e inflación": "Precios e inflación",
+    "Por departamento": "Por departamento",
+    "Por división": "Por división",
+    "Índice de Precios de Consumo de Alta Frecuencia": "Índice de Precios de Consumo de Alta Frecuencia",
+    "Dato oficial del INE": "Dato oficial del INE",
+    "Inflación por departamento": "Inflación por departamento",
+    "Inflación por ciudad y división": "Inflación por ciudad y división",
+    "Mensual": "Mensual",
+    "Acumulada": "Acumulada",
+    "12 meses": "12 meses",
+    "variación mensual": "variación mensual",
+    "variación acumulada en el año": "variación acumulada en el año",
+    "variación a 12 meses": "variación a 12 meses",
+    "División": "División",
+    "Mes": "Mes",
+    "Ciudad": "Ciudad",
+    "Índice": "Índice",
+    "INE de": "INE de",
+    "Comparar contra": "Comparar contra",
+    "Período": "Período",
+    "Fechas exactas": "Fechas exactas",
+    "desde": "desde",
+    "hasta": "hasta",
+    "Índice general": "Índice general",
+    "Todas": "Todas",
+    "Los 3": "Los 3",
+    "Mismas divisiones": "Mismas divisiones",
+    "6 meses": "6 meses",
+    "1 año": "1 año",
+    "2 años": "2 años",
+    "Todo": "Todo",
+    "Personalizado": "Personalizado",
+    "Variación": "Variación",
+    "Peso en la canasta": "Peso en la canasta",
+    "peso de la ciudad en el IPC nacional": "peso de la ciudad en el IPC nacional",
+    "El INE publica la {medida} desde {fecha}.": "El INE publica la {medida} desde {fecha}.",
+    "más adelante": "más adelante",
+    "Sin dato para este mes.": "Sin dato para este mes.",
+    "Fuente: Instituto Nacional de Estadística (INE).": "Fuente: Instituto Nacional de Estadística (INE).",
+    "Fuente: Instituto Nacional de Estadística (INE) y estimación propia.": "Fuente: Instituto Nacional de Estadística (INE) y estimación propia.",
+    "Base 1-oct-2024 = 100": "Base 1-oct-2024 = 100",
+    "diario": "diario",
+    "en curso": "en curso",
+    "Acumulado del mes": "Acumulado del mes",
+    "Variación a 12 meses, día a día": "Variación a 12 meses, día a día",
+    "Cómo viene el mes, día a día": "Cómo viene el mes, día a día",
+    "Variación mensual": "Variación mensual",
+    "Variación a 12 meses, comparable": "Variación a 12 meses, comparable",
+    "Divisiones, ordenadas por cuánto subieron": "Divisiones, ordenadas por cuánto subieron",
+    "Productos que se movieron": "Productos que se movieron",
+    "índice general (12 divisiones)": "índice general (12 divisiones)",
+    "mismas {n} divisiones": "mismas {n} divisiones",
+    "12 meses, día a día": "12 meses, día a día",
+    "en lo que va de {mes}": "en lo que va de {mes}",
+    "mes de {mes}": "mes de {mes}",
+    "acumulado desde el cierre anterior · <b>provisional</b>": "acumulado desde el cierre anterior · <b>provisional</b>",
+    "mes cerrado": "mes cerrado",
+    "INE oficial · 12 meses": "INE oficial · 12 meses",
+    "INE oficial · mensual": "INE oficial · mensual",
+    "IPCAF · 12 meses comparable": "IPCAF · 12 meses comparable",
+    "cierre contra cierre, como el INE": "cierre contra cierre, como el INE",
+    "brecha": "brecha",
+    "mes en curso: mide menos de 365 días": "mes en curso: mide menos de 365 días",
+    "IPCAF · mes anterior": "IPCAF · mes anterior",
+    "al <b>{fecha}</b>": "al <b>{fecha}</b>",
+    " · a <b>{fecha}</b>": " · a <b>{fecha}</b>",
+    "mensual": "mensual",
+    "No hay divisiones acá.": "No hay divisiones acá.",
+    "Variación a 12 meses": "Variación a 12 meses",
+    " al {fecha}": " al {fecha}",
+    ", contra el INE del último mes. ": ", contra el INE del último mes. ",
+    "La mensual es de {mes}, el último mes cerrado, para el IPCAF y para el INE. ": "La mensual es de {mes}, el último mes cerrado, para el IPCAF y para el INE. ",
+    "La brecha es la resta de las dos columnas de su izquierda.": "La brecha es la resta de las dos columnas de su izquierda.",
+    "en el día": "en el día",
+    "en el mes": "en el mes",
+    "en 12 meses": "en 12 meses",
+    "día": "día",
+    "mes": "mes",
+    "índice": "índice",
+    "Producto": "Producto",
+    "Los que más bajaron": "Los que más bajaron",
+    "Cambio del índice de cada producto {periodo}": "Cambio del índice de cada producto {periodo}",
+    ", dentro de {division}.": ", dentro de {division}.",
+    "Ningún producto se movió acá.": "Ningún producto se movió acá.",
+    "esta serie no está en datos.json": "esta serie no está en datos.json",
+    "sin datos en este rango": "sin datos en este rango",
+    "no pude cargar datos.json": "no pude cargar datos.json",
+    "no pude cargar el dato del INE": "no pude cargar el dato del INE",
+    "no pude cargar el mapa del INE por departamento": "no pude cargar el mapa del INE por departamento",
+    "Secciones": "Secciones",
+    "Inicio": "Inicio",
+    "Medida": "Medida",
+    "Idioma": "Idioma",
+    "Eje central": "Eje central",
+    "Mapa de Bolivia por departamento": "Mapa de Bolivia por departamento",
+    "Treemap de las 12 divisiones del IPC según su variación": "Treemap de las 12 divisiones del IPC según su variación",
+    "Variación a 12 meses diaria": "Variación a 12 meses diaria",
+    "Acumulado del mes, día a día": "Acumulado del mes, día a día",
+    "Variación a 12 meses comparable": "Variación a 12 meses comparable",
+    "Bolivia entera (9 ciudades)": "Bolivia entera (9 ciudades)",
+    "nacional": "nacional",
+    "de esta ciudad": "de esta ciudad",
+    "g1Desc": "Cada día contra el mismo día del año pasado: la lectura más fina, y la única\n          que aprovecha tener dato diario. El INE publica una vez al mes, así que sus puntos son\n          mensuales; esta línea se mueve todos los días y reacciona antes, pero también se sacude\n          con una oferta puntual o un feriado.",
+    "g5Desc": "Desde el cierre del mes anterior hasta cada día. Arranca de cero cada primero\n          y va sumando, así que se ve como dientes de sierra: cada diente es un mes. El día que el\n          mes cierra vale exactamente lo mismo que el punto mensual del gráfico siguiente.",
+    "g2Desc": "Fin de mes contra fin del mes anterior, que es la que publica el INE. Cierre\n          contra cierre, sin mirar cuántos días trae el mes: abril compara su día 30 contra el 31\n          de marzo, y mayo su día 31 contra el 30 de abril. El último punto es provisional hasta\n          que el mes cierre.",
+    "portadaTexto": "La inflación de Bolivia en un solo lugar: el dato oficial del INE para los nueve\n      departamentos y las doce divisiones del IPC desde 2008, y un índice propio que sigue\n      los precios <b>día a día</b> en La Paz, Cochabamba y Santa Cruz.",
+    "descripcion": "Precios e inflación en Bolivia: inflación oficial por departamento y por división, e Índice de Precios de Consumo de Alta Frecuencia con precios diarios de La Paz, Cochabamba y Santa Cruz. Fuente: Instituto Nacional de Estadística (INE) y estimación propia.",
+    "producto12Meses": "12 meses",
+    "g3Inicio": "Fin de mes contra fin del mismo mes del año pasado, igual que el INE: la única comparable uno a uno. ",
+    "g3Division": "Es esta división contra la misma división del INE en {donde}, así que la diferencia que quede es de dónde sale el precio, no de qué se mide.",
+    "g3General": "La referencia es el índice general del INE en {donde}, con 12 divisiones: incluye alquiler, transporte, educación y restaurantes, que acá no se miden, así que la brecha es casi toda composición y no precios.",
+    "g3Mismas": "La referencia es el INE de {donde} rearmado con las mismas {n} divisiones y los mismos pesos, que aísla la única diferencia real: el INE releva mercados, tiendas de barrio y servicios, y esto es un supermercado. Su índice general {ambito} marca {valor}."
+  },
+  "en": {
+    "Precios e inflación": "Prices and inflation",
+    "Por departamento": "By department",
+    "Por división": "By division",
+    "Índice de Precios de Consumo de Alta Frecuencia": "High-Frequency Consumer Price Index",
+    "Dato oficial del INE": "Official INE data",
+    "Inflación por departamento": "Inflation by department",
+    "Inflación por ciudad y división": "Inflation by city and division",
+    "Mensual": "Monthly",
+    "Acumulada": "Year to date",
+    "12 meses": "12-month",
+    "variación mensual": "monthly change",
+    "variación acumulada en el año": "year-to-date change",
+    "variación a 12 meses": "12-month change",
+    "División": "Division",
+    "Mes": "Month",
+    "Ciudad": "City",
+    "Índice": "Index",
+    "INE de": "INE for",
+    "Comparar contra": "Compare against",
+    "Período": "Period",
+    "Fechas exactas": "Exact dates",
+    "desde": "from",
+    "hasta": "to",
+    "Índice general": "General index",
+    "Todas": "All",
+    "Los 3": "All 3",
+    "Mismas divisiones": "Same divisions",
+    "6 meses": "6 months",
+    "1 año": "1 year",
+    "2 años": "2 years",
+    "Todo": "All",
+    "Personalizado": "Custom",
+    "Variación": "Change",
+    "Peso en la canasta": "Basket weight",
+    "peso de la ciudad en el IPC nacional": "city weight in the national CPI",
+    "El INE publica la {medida} desde {fecha}.": "INE publishes the {medida} since {fecha}.",
+    "más adelante": "later",
+    "Sin dato para este mes.": "No data for this month.",
+    "Fuente: Instituto Nacional de Estadística (INE).": "Source: National Institute of Statistics (INE).",
+    "Fuente: Instituto Nacional de Estadística (INE) y estimación propia.": "Source: National Institute of Statistics (INE) and own estimates.",
+    "Base 1-oct-2024 = 100": "Base Oct 1, 2024 = 100",
+    "diario": "daily",
+    "en curso": "in progress",
+    "Acumulado del mes": "Month to date",
+    "Variación a 12 meses, día a día": "12-month change, day by day",
+    "Cómo viene el mes, día a día": "Month to date, day by day",
+    "Variación mensual": "Monthly change",
+    "Variación a 12 meses, comparable": "Comparable 12-month change",
+    "Divisiones, ordenadas por cuánto subieron": "Divisions, ranked by how much they rose",
+    "Productos que se movieron": "Products that moved",
+    "índice general (12 divisiones)": "general index (12 divisions)",
+    "mismas {n} divisiones": "same {n} divisions",
+    "12 meses, día a día": "12-month, day by day",
+    "en lo que va de {mes}": "{mes} to date",
+    "mes de {mes}": "{mes}",
+    "acumulado desde el cierre anterior · <b>provisional</b>": "since the previous close · <b>provisional</b>",
+    "mes cerrado": "closed month",
+    "INE oficial · 12 meses": "Official INE · 12-month",
+    "INE oficial · mensual": "Official INE · monthly",
+    "IPCAF · 12 meses comparable": "IPCAF · comparable 12-month",
+    "cierre contra cierre, como el INE": "close to close, like the INE",
+    "brecha": "gap",
+    "mes en curso: mide menos de 365 días": "month in progress: covers fewer than 365 days",
+    "IPCAF · mes anterior": "IPCAF · previous month",
+    "al <b>{fecha}</b>": "as of <b>{fecha}</b>",
+    " · a <b>{fecha}</b>": " · as of <b>{fecha}</b>",
+    "mensual": "monthly",
+    "No hay divisiones acá.": "No divisions here.",
+    "Variación a 12 meses": "12-month change",
+    " al {fecha}": " as of {fecha}",
+    ", contra el INE del último mes. ": ", against the INE's latest month. ",
+    "La mensual es de {mes}, el último mes cerrado, para el IPCAF y para el INE. ": "The monthly change is for {mes}, the last closed month, for both the IPCAF and the INE. ",
+    "La brecha es la resta de las dos columnas de su izquierda.": "The gap is the difference between the two columns to its left.",
+    "en el día": "on the day",
+    "en el mes": "this month",
+    "en 12 meses": "over 12 months",
+    "día": "day",
+    "mes": "month",
+    "índice": "index",
+    "Producto": "Product",
+    "Los que más bajaron": "Biggest declines",
+    "Cambio del índice de cada producto {periodo}": "Change in each product's index {periodo}",
+    ", dentro de {division}.": ", within {division}.",
+    "Ningún producto se movió acá.": "No product moved here.",
+    "esta serie no está en datos.json": "this series is not in datos.json",
+    "sin datos en este rango": "no data in this range",
+    "no pude cargar datos.json": "could not load datos.json",
+    "no pude cargar el dato del INE": "could not load INE data",
+    "no pude cargar el mapa del INE por departamento": "could not load the INE map by department",
+    "Secciones": "Sections",
+    "Inicio": "Home",
+    "Medida": "Measure",
+    "Idioma": "Language",
+    "Eje central": "Central axis",
+    "Mapa de Bolivia por departamento": "Map of Bolivia by department",
+    "Treemap de las 12 divisiones del IPC según su variación": "Treemap of the 12 CPI divisions by their change",
+    "Variación a 12 meses diaria": "Daily 12-month change",
+    "Acumulado del mes, día a día": "Month to date, day by day",
+    "Variación a 12 meses comparable": "Comparable 12-month change",
+    "Bolivia entera (9 ciudades)": "All of Bolivia (9 cities)",
+    "nacional": "national",
+    "de esta ciudad": "for this city",
+    "g1Desc": "Each day against the same day last year: the most detailed reading, and the only one that takes advantage of daily data. INE publishes once a month, so its points are monthly; this line moves every day and reacts sooner, but it can also jump because of a one-off offer or a holiday.",
+    "g5Desc": "From the previous month’s close to each day. It starts at zero on the first of every month and adds up, so it looks like saw teeth: each tooth is a month. On the day the month closes, it is exactly the same as the monthly point in the next chart.",
+    "g2Desc": "Month end against the previous month end, which is what INE publishes. Close to close, regardless of how many days the month has: April compares its 30th with March 31, and May its 31st with April 30. The last point is provisional until the month closes.",
+    "portadaTexto": "Inflation in Bolivia in one place: official INE data for the nine departments and the twelve CPI divisions since 2008, and an in-house index that tracks prices <b>day by day</b> in La Paz, Cochabamba and Santa Cruz.",
+    "descripcion": "Prices and inflation in Bolivia: official inflation by department and division, and a High-Frequency Consumer Price Index with daily prices from La Paz, Cochabamba and Santa Cruz. Source: National Institute of Statistics (INE) and own estimates.",
+    "producto12Meses": "12 months",
+    "g3Inicio": "Month end against the end of the same month last year, just like INE: the only one that can be compared one to one. ",
+    "g3Division": "This division is compared with the same INE division in {donde}, so any remaining difference comes from where the price is collected, rather than what is measured.",
+    "g3General": "The reference is INE’s general index in {donde}, with 12 divisions: it includes rent, transport, education and restaurants, which are not measured here, so the gap is almost entirely due to composition rather than prices.",
+    "g3Mismas": "The reference is the INE index for {donde}, rebuilt with the same {n} divisions and the same weights, isolating the only real difference: INE surveys markets, neighborhood shops and services, while this is a supermarket. Its general index {ambito} stands at {valor}."
+  }
+};
+let idiomaActual = (() => {
+  try { const valor = localStorage.getItem("idioma"); return valor === "en" ? "en" : "es"; }
+  catch(e) { return "es"; }
+})();
+const texto = (clave, valores={}) => TEXTOS[idiomaActual][clave].replace(/\{(\w+)\}/g,
+  (marca, nombre) => Object.prototype.hasOwnProperty.call(valores, nombre) ? valores[nombre] : marca);
+const DIV_EN = {"0": "General index", "1": "Food and non-alcoholic beverages", "2": "Alcoholic beverages and tobacco", "3": "Clothing and footwear", "4": "Housing and utilities", "5": "Furnishings and household goods and services", "6": "Health", "7": "Transport", "8": "Communications", "9": "Recreation and culture", "10": "Education", "11": "Food and drink away from home", "12": "Miscellaneous goods and services"};
+const DIV_CORTA_EN = {"1": "Food", "2": "Alcohol and tobacco", "3": "Clothing", "4": "Housing", "5": "Household", "6": "Health", "7": "Transport", "8": "Communications", "9": "Recreation", "10": "Education", "11": "Restaurants", "12": "Miscellaneous"};
+const CAPITAL_EN = {"chuquisaca": "Sucre", "la_paz": "La Paz metro area", "cochabamba": "Kanata Metropolitan Region", "oruro": "Oruro", "potosi": "Potosí", "tarija": "Tarija", "santa_cruz": "Santa Cruz metro area", "beni": "Trinidad", "pando": "Cobija"};
+const divisionNom = (k, original) => idiomaActual === "en" ? DIV_EN[k] : original;
+const metodoNom = k => DATOS.metodos[k];
+function aplicarTextos(){
+  document.documentElement.lang = idiomaActual;
+  document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = texto(el.dataset.i18n); });
+  document.querySelectorAll("[data-i18n-html]").forEach(el => { el.innerHTML = texto(el.dataset.i18nHtml); });
+  for(const [dato, atributo] of [["i18nAria", "aria-label"], ["i18nContent", "content"], ["i18nDesc", "data-desc"]]){
+    document.querySelectorAll(`[data-${dato.replace(/[A-Z]/g, c => "-"+c.toLowerCase())}]`)
+      .forEach(el => { el.setAttribute(atributo, texto(el.dataset[dato])); });
+  }
+  document.querySelectorAll("#idioma button").forEach(b => {
+    b.setAttribute("aria-pressed", String(b.dataset.l === idiomaActual));
+  });
+}
+function mensaje(id, clave){
+  const el = $(id); el.dataset.i18n = clave; el.textContent = texto(clave);
+}
+function cambiarIdioma(valor){
+  idiomaActual = valor === "en" ? "en" : "es";
+  try { localStorage.setItem("idioma", idiomaActual); } catch(e) {}
+  aplicarTextos();
+  SELS.forEach(s => s.sinc());
+  SEGS.forEach(s => s.sinc());
+  if(DATOS) pintar();
+  if($("#mapa svg")) pintarMapa();
+  if(INE9) pintarDivisionesINE();
+  document.querySelectorAll(".credito").forEach(el => { el.textContent = creditoTexto(); });
+  $("#tip").style.opacity = 0;
+}
+$("#idioma").onclick = e => {
+  const boton = e.target.closest("button[data-l]");
+  if(boton) cambiarIdioma(boton.dataset.l);
+};
+aplicarTextos();
+
+
 const D = {ciudad:"TRES", division:"TOTAL", metodo:"geometrica",
            ambito:"nacional", refine:"general", desde:null, hasta:null, rango:"12m",
            perProd:"vm"};
@@ -524,8 +805,8 @@ let DATOS = null;
 
 const COLOR = {geometrica:"var(--m0)", intermedia:"var(--m1)", aritmetica:"var(--m2)"};
 
-const FUENTE = "Fuente: Instituto Nacional de Estadística (INE) y estimación propia.";
-const CREDITO = `${FUENTE} · Base 1-oct-2024 = 100 · INE base 2016 = 100`;
+const fuenteTexto = () => texto("Fuente: Instituto Nacional de Estadística (INE) y estimación propia.");
+const creditoTexto = () => `${fuenteTexto()} · ${texto("Base 1-oct-2024 = 100")} · INE base 2016 = 100`;
 const REMOTO = "https://bohozx.github.io/IPCAF/";
 
 const traer = n => {
@@ -537,7 +818,7 @@ function creditos(){
   document.querySelectorAll("section.bloque").forEach(sec => {
     if(!sec.querySelector("svg[id]")) return;
     const p = document.createElement("p");
-    p.className = "credito"; p.textContent = CREDITO;
+    p.className = "credito"; p.textContent = creditoTexto();
     sec.appendChild(p);
   });
 }
@@ -551,7 +832,7 @@ const dia = f => new Date(f+"T00:00:00");
 
 traer("datos.json").then(d=>{DATOS=d; arrancar();})
   .catch(()=>{ const a=$("#aviso");
-    a.textContent="no pude cargar datos.json"; a.hidden=false; });
+    mensaje("#aviso", "no pude cargar datos.json"); a.hidden=false; });
 
 const ICO = d => `<svg viewBox="0 0 24 24" width="16" height="16" fill="none"
   stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"
@@ -580,9 +861,10 @@ const FLECHA = `<svg class="flecha" viewBox="0 0 24 24" width="13" height="13" f
   aria-hidden="true"><path d="m6 9.5 6 6 6-6"/></svg>`;
 
 const NOMBRE_CIUDAD = {TRES:"Eje central"};
-const ciudadNom = k => NOMBRE_CIUDAD[k] || DATOS.ciudades[k];
+const ciudadNom = k => k === "TRES" ? texto(NOMBRE_CIUDAD[k]) : DATOS.ciudades[k];
 
 const SELS = [];
+const SEGS = [];
 
 function armarSel(id, opciones, leer, escribir){
   const cont = $(id), cara = document.createElement("button"),
@@ -642,7 +924,9 @@ function armarSeg(id, opciones, leer, escribir){
   cont.onclick = e => { const b = e.target.closest("button[data-k]"); if(!b) return;
     escribir(b.dataset.k); sinc(); };
   sinc();
-  return {sinc};
+  const api = {sinc};
+  SEGS.push(api);
+  return api;
 }
 
 function arrancar(){
@@ -651,12 +935,12 @@ function arrancar(){
     () => D.ciudad, k => { D.ciudad = k; pintar(); });
 
   armarSel("#divisiones",
-    () => [["TOTAL", "Todas", ICONOS.TOTAL]].concat(
-      Object.entries(DATOS.divisiones).map(([k, v]) => [k, v, ICONOS[k]])),
+    () => [["TOTAL", texto("Todas"), ICONOS.TOTAL]].concat(
+      Object.entries(DATOS.divisiones).map(([k, v]) => [k, divisionNom(k, v), ICONOS[k]])),
     () => D.division, k => { D.division = k; pintar(); });
 
   armarSel("#metodos",
-    () => Object.entries(DATOS.metodos).concat([["todos", "Los 3"]]),
+    () => Object.keys(DATOS.metodos).map(k => [k, metodoNom(k)]).concat([["todos", texto("Los 3")]]),
     () => D.metodo, k => { D.metodo = k; pintar(); });
 
   armarSel("#ambito",
@@ -665,12 +949,12 @@ function arrancar(){
     () => D.ambito, k => { D.ambito = k; pintar(); });
 
   armarSel("#refine",
-    [["mismas", "Mismas divisiones"], ["general", "Índice general"]],
+    () => [["mismas", texto("Mismas divisiones")], ["general", texto("Índice general")]],
     () => D.refine, k => { D.refine = k; pintar(); });
 
   armarSel("#rangos",
-    [["6m", "6 meses"], ["12m", "1 año"], ["24m", "2 años"], ["todo", "Todo"],
-     ["propio", "Personalizado"]],
+    () => [["6m", texto("6 meses")], ["12m", texto("1 año")], ["24m", texto("2 años")], ["todo", texto("Todo")],
+     ["propio", texto("Personalizado")]],
     () => D.rango || "propio",
     k => { if(k !== "propio") rango(k); else D.rango = null; pintar(); });
 
@@ -709,16 +993,16 @@ const etqINE = () => {
   const donde = D.ambito==="nacional" ? "Bolivia" : ciudadNom(D.ciudad);
   if(D.division!=="TOTAL") return `INE · ${donde}`;
   return D.refine==="general"
-    ? `INE · ${donde} · índice general (12 divisiones)`
-    : `INE · ${donde} · mismas ${DATOS.en_total.length} divisiones`;
+    ? `INE · ${donde} · ${texto("índice general (12 divisiones)")}`
+    : `INE · ${donde} · ${texto("mismas {n} divisiones", {n:DATOS.en_total.length})}`;
 };
 
 const descINE = () => {
   const donde = D.ambito==="nacional" ? "Bolivia" : ciudadNom(D.ciudad);
-  if(D.division!=="TOTAL") return `${donde} · ${DATOS.divisiones[D.division]}`;
+  if(D.division!=="TOTAL") return `${donde} · ${divisionNom(D.division, DATOS.divisiones[D.division])}`;
   return D.refine==="general"
-    ? `${donde} · índice general (12 divisiones)`
-    : `${donde} · mismas ${DATOS.en_total.length} divisiones`;
+    ? `${donde} · ${texto("índice general (12 divisiones)")}`
+    : `${donde} · ${texto("mismas {n} divisiones", {n:DATOS.en_total.length})}`;
 };
 
 function pintar(){
@@ -747,7 +1031,7 @@ function pintar(){
 }
 
 const nombreMes = f => f
-  ? dia(f).toLocaleDateString("es",{month:"long",year:"numeric"}) : null;
+  ? dia(f).toLocaleDateString(idiomaActual,{month:"long",year:"numeric"}) : null;
 
 function tarjetas(){
   const sD12  = enR(propio("d12"));
@@ -761,12 +1045,12 @@ function tarjetas(){
 
   const cerrado = DATOS.ultimo_cerrado;
   const enCurso = men[0] && cerrado && men[0] > cerrado;
-  const mesNom = men[0] ? dia(men[0]).toLocaleDateString("es",{month:"long"}) : "";
+  const mesNom = men[0] ? dia(men[0]).toLocaleDateString(idiomaActual,{month:"long"}) : "";
   const sMenCerr = cerrado ? sMen.filter(q => q[0] <= cerrado) : sMen;
   const mesPrev = ult(sMenCerr);
 
   const fechaD12 = d12[0]
-    ? dia(d12[0]).toLocaleDateString("es",{day:"numeric",month:"long",year:"numeric"})
+    ? dia(d12[0]).toLocaleDateString(idiomaActual,{day:"numeric",month:"long",year:"numeric"})
     : "—";
 
   const cifra = (v, unidad="%") =>
@@ -775,34 +1059,34 @@ function tarjetas(){
       ><span class="u">${unidad}</span></div>`;
 
   $("#tarjetas").innerHTML = `
-    <div class="tj foco"><div class="et">12 meses, día a día</div>
+    <div class="tj foco"><div class="et">${texto("12 meses, día a día")}</div>
       ${cifra(d12[1])}
-      <div class="p">al <b>${fechaD12}</b></div></div>
+      <div class="p">${texto("al <b>{fecha}</b>", {fecha:fechaD12})}</div></div>
 
-    <div class="tj"><div class="et">${enCurso ? "en lo que va de "+mesNom : "mes de "+mesNom}</div>
+    <div class="tj"><div class="et">${enCurso ? texto("en lo que va de {mes}", {mes:mesNom}) : texto("mes de {mes}", {mes:mesNom})}</div>
       ${cifra(men[1])}
-      <div class="p">${enCurso ? `acumulado desde el cierre anterior · <b>provisional</b>`
-                               : "mes cerrado"}</div></div>
+      <div class="p">${enCurso ? texto("acumulado desde el cierre anterior · <b>provisional</b>")
+                               : texto("mes cerrado")}</div></div>
 
-    <div class="tj"><div class="et">INE oficial · 12 meses</div>
+    <div class="tj"><div class="et">${texto("INE oficial · 12 meses")}</div>
       ${cifra(iA[1])}
       <div class="p">${descINE()}${
-        nombreMes(iA[0]) ? ` · a <b>${nombreMes(iA[0])}</b>` : ""}</div></div>
+        nombreMes(iA[0]) ? texto(" · a <b>{fecha}</b>", {fecha:nombreMes(iA[0])}) : ""}</div></div>
 
-    <div class="tj"><div class="et">INE oficial · mensual</div>
+    <div class="tj"><div class="et">${texto("INE oficial · mensual")}</div>
       ${cifra(iM[1])}
-      <div class="p">${nombreMes(iM[0]) ? `mes de <b>${nombreMes(iM[0])}</b>` : "—"}</div></div>
+      <div class="p">${nombreMes(iM[0]) ? texto("mes de {mes}", {mes:`<b>${nombreMes(iM[0])}</b>`}) : "—"}</div></div>
 
-    <div class="tj"><div class="et">IPCAF · 12 meses comparable</div>
+    <div class="tj"><div class="et">${texto("IPCAF · 12 meses comparable")}</div>
       ${cifra(a12[1])}
-      <div class="p">cierre contra cierre, como el INE${
-        br!=null ? ` · brecha <b>${fmtS(br)} pp</b>` : ""}${
-        enCurso ? `<span class="q">mes en curso: mide menos de 365 días</span>` : ""}</div></div>
+      <div class="p">${texto("cierre contra cierre, como el INE")}${
+        br!=null ? ` · ${texto("brecha")} <b>${fmtS(br)} pp</b>` : ""}${
+        enCurso ? `<span class="q">${texto("mes en curso: mide menos de 365 días")}</span>` : ""}</div></div>
 
-    <div class="tj"><div class="et">IPCAF · mes anterior</div>
+    <div class="tj"><div class="et">${texto("IPCAF · mes anterior")}</div>
       ${cifra(mesPrev[1])}
       <div class="p">${nombreMes(mesPrev[0])
-        ? `mes de <b>${nombreMes(mesPrev[0])}</b>` : "—"}</div></div>`;
+        ? texto("mes de {mes}", {mes:`<b>${nombreMes(mesPrev[0])}</b>`}) : "—"}</div></div>`;
   animarCifras(".tj .n .v[data-v]");
 }
 
@@ -870,11 +1154,11 @@ function dibujar(id, ss, op={}){
     const falta = ss.every(s => !s.p || !s.p.length);
     const hay = ss.some(s => (DATOS.propio[D.ciudad][base()]||{})[D.division]);
     svg.innerHTML = `<text x="50%" y="50%" text-anchor="middle" font-size="12.5"
-      fill="var(--tinta3)">${falta && !hay ? "esta serie no está en datos.json"
-      : "sin datos en este rango"}</text>`;
+      fill="var(--tinta3)">${falta && !hay ? texto("esta serie no está en datos.json")
+      : texto("sin datos en este rango")}</text>`;
     return; }
 
-  let s = `<desc>${limpio(svg.dataset.desc)} ${FUENTE}</desc><defs>` + ss.map((se,i)=>`
+  let s = `<desc>${limpio(svg.dataset.desc)} ${fuenteTexto()}</desc><defs>` + ss.map((se,i)=>`
       <linearGradient id="${gid}-a${i}" x1="0" y1="0" x2="0" y2="1">
         <stop offset="0%" style="stop-color:${se.color};stop-opacity:.22"/>
         <stop offset="70%" style="stop-color:${se.color};stop-opacity:.03"/>
@@ -907,7 +1191,7 @@ function dibujar(id, ss, op={}){
           stroke="var(--cero)" stroke-width="1"/>
         <text x="${e.x(t)}" y="${e.H-9}" text-anchor="middle" font-size="9.5"
         font-family="Geist Mono,monospace" fill="var(--eje)"
-        >${new Date(t).toLocaleDateString("es",{month:"short",year:"2-digit"})}</text>`; }
+        >${new Date(t).toLocaleDateString(idiomaActual,{month:"short",year:"2-digit"})}</text>`; }
 
   const piso = e.y(Math.min(Math.max(0, e.t.lo), e.t.hi));
 
@@ -991,7 +1275,7 @@ function hover(svg,e,ss){
       cruz.innerHTML=`<line x1="${xc}" x2="${xc}" y1="${M.ar}" y2="${e.H-M.ab}"
         stroke="var(--acento2)" stroke-width="1" stroke-dasharray="3 3" opacity=".5"/>`+marcas;
     cruz.style.opacity=1;
-    tip.innerHTML=`<b>${fecha?dia(fecha).toLocaleDateString("es",
+    tip.innerHTML=`<b>${fecha?dia(fecha).toLocaleDateString(idiomaActual,
       {day:"numeric",month:"short",year:"numeric"}):""}</b>${filas}`;
     tip.style.opacity=1;
     tip.style.left=Math.min(cx+16, innerWidth-tip.offsetWidth-10)+"px";
@@ -1005,14 +1289,14 @@ function leyenda(id, items){
   $(id).innerHTML = items.map(i=>`<span class="it"><span class="mk${i.tipo==="punto"?" pt":""}"
     style="background:${trazoMk(i)}"></span>${i.nombre}</span>`).join("");
 }
-const nombreM = m => D.metodo==="todos" ? DATOS.metodos[m] : "IPCAF · "+DATOS.metodos[m];
+const nombreM = m => D.metodo==="todos" ? metodoNom(m) : "IPCAF · "+metodoNom(m);
 const nuestras = (k,extra={}) => visibles().map((m,i)=>Object.assign(
   {nombre:nombreM(m), color:COLOR[m], p:enR(propioDe(m,k)), principal:i===0}, extra));
 const lineaINE = k => ({nombre:etqINE(), color:"var(--ine)", raya:true, p:enR(ine(k))});
 
 function g5(){
   const m = base();
-  const s=[{nombre:"Acumulado del mes", color:COLOR[m], p:enR(propioDe(m,"mtd")),
+  const s=[{nombre:texto("Acumulado del mes"), color:COLOR[m], p:enR(propioDe(m,"mtd")),
             area:true, principal:true}, lineaINE("men")];
   leyenda("#l5",s); dibujar("#g5",s,{marcas:true}); }
 function g1(){ const s=nuestras("d12",{area:true}).concat([lineaINE("a12")]);
@@ -1022,21 +1306,12 @@ function g2(){ const s=nuestras("men").concat([lineaINE("men")]);
 function g3(){ const s=nuestras("a12").concat([lineaINE("a12")]);
   const n = DATOS.en_total.length;
   const nacional = D.ambito==="nacional";
-  const donde = nacional ? "Bolivia entera (9 ciudades)" : ciudadNom(D.ciudad);
+  const donde = nacional ? texto("Bolivia entera (9 ciudades)") : ciudadNom(D.ciudad);
   const gen2 = fmt(ult(enR(zip(DATOS.fechas_m, (fuenteINE().GENERAL||{}).a12)))[1]);
-  $("#g3").dataset.desc = "Fin de mes contra fin del mismo mes del año pasado, igual que el "
-    + "INE: la única comparable uno a uno. "
-    + (D.division !== "TOTAL"
-      ? `Es esta división contra la misma división del INE en ${donde}, así que la diferencia `
-        + `que quede es de dónde sale el precio, no de qué se mide.`
-      : D.refine === "general"
-      ? `La referencia es el índice general del INE en ${donde}, con 12 divisiones: incluye `
-        + `alquiler, transporte, educación y restaurantes, que acá no se miden, así que la `
-        + `brecha es casi toda composición y no precios.`
-      : `La referencia es el INE de ${donde} rearmado con las mismas ${n} divisiones y los `
-        + `mismos pesos, que aísla la única diferencia real: el INE releva mercados, tiendas `
-        + `de barrio y servicios, y esto es un supermercado. Su índice general `
-        + `${nacional ? "nacional" : "de esta ciudad"} marca ${gen2}.`);
+  $("#g3").dataset.desc = texto("g3Inicio")
+    + (D.division !== "TOTAL" ? texto("g3Division", {donde})
+      : D.refine === "general" ? texto("g3General", {donde})
+      : texto("g3Mismas", {donde, n, ambito:texto(nacional ? "nacional" : "de esta ciudad"), valor:gen2}));
   leyenda("#l3",s); dibujar("#g3",s,{marcas:true}); }
 
 
@@ -1061,23 +1336,22 @@ function tablaDiv(){
     const [fa, a] = ultimo(DATOS.fechas_d, p.d12);
     const [, ia]  = ultimo(DATOS.fechas_m, ine.a12);
     const mes = mesComun(p.men, ine.men);
-    return {k, nombre, a, ia, fa,
+    return {k, nombre:divisionNom(k, nombre), a, ia, fa,
             m: mes ? mes.v : null, im: mes ? mes.i : null, fm: mes ? mes.f : null};
   }).filter(x=>x&&x.a!=null).sort((x,y)=>y.a-x.a);
 
   if(!filas.length){ $("#sd").textContent = "";
-    $("#td").innerHTML = `<tbody><tr><td class="vacio">No hay divisiones acá.</td></tr></tbody>`;
+    $("#td").innerHTML = `<tbody><tr><td class="vacio">${texto("No hay divisiones acá.")}</td></tr></tbody>`;
     return; }
 
   const f12 = filas.find(f=>f.fa), fme = filas.find(f=>f.m!=null && f.fm);
-  const enDia = f => dia(f).toLocaleDateString("es",
+  const enDia = f => dia(f).toLocaleDateString(idiomaActual,
     {day:"numeric", month:"long", year:"numeric"});
-  const enMes = f => dia(f).toLocaleDateString("es", {month:"long", year:"numeric"});
-  $("#sd").textContent = "Variación a 12 meses"
-    + (f12 ? ` al ${enDia(f12.fa)}` : "") + ", contra el INE del último mes. "
-    + (fme ? `La mensual es de ${enMes(fme.fm)}, el último mes cerrado, `
-           + "para el IPCAF y para el INE. " : "")
-    + "La brecha es la resta de las dos columnas de su izquierda.";
+  const enMes = f => dia(f).toLocaleDateString(idiomaActual, {month:"long", year:"numeric"});
+  $("#sd").textContent = texto("Variación a 12 meses")
+    + (f12 ? texto(" al {fecha}", {fecha:enDia(f12.fa)}) : "") + texto(", contra el INE del último mes. ")
+    + (fme ? texto("La mensual es de {mes}, el último mes cerrado, para el IPCAF y para el INE. ", {mes:enMes(fme.fm)}) : "")
+    + texto("La brecha es la resta de las dos columnas de su izquierda.");
 
   const max = Math.max(...filas.map(f=>Math.abs(f.a)), .01);
   const celdas = (v, i, corta) => {
@@ -1088,12 +1362,12 @@ function tablaDiv(){
       <td class="num${flojo}">${v!=null&&i!=null?fmt(v-i):"—"}</td>`;
   };
   $("#td").innerHTML = `<thead>
-      <tr><th rowspan="2">División</th><th rowspan="2"></th>
-          <th colspan="3" class="num grupo">12 meses</th>
-          <th colspan="3" class="num grupo corta">mensual</th></tr>
-      <tr><th class="num">IPCAF</th><th class="num">INE</th><th class="num">brecha</th>
+      <tr><th rowspan="2">${texto("División")}</th><th rowspan="2"></th>
+          <th colspan="3" class="num grupo">${texto("12 meses")}</th>
+          <th colspan="3" class="num grupo corta">${texto("mensual")}</th></tr>
+      <tr><th class="num">IPCAF</th><th class="num">INE</th><th class="num">${texto("brecha")}</th>
           <th class="num corta">IPCAF</th><th class="num">INE</th>
-          <th class="num">brecha</th></tr></thead><tbody>${
+          <th class="num">${texto("brecha")}</th></tr></thead><tbody>${
     filas.map((f,i)=>`<tr><td>${f.nombre}</td>
       <td style="width:16%"><span class="bar${f.a<0?" n":""}"
         style="width:${Math.abs(f.a)/max*100}%;animation-delay:${(i*.06).toFixed(2)}s"></span></td>
@@ -1102,9 +1376,9 @@ function tablaDiv(){
 }
 
 const periodosProd = () => [
-  {k:"v1", et:"en el día",    th:"día"},
-  {k:"vm", et:"en el mes",    th:"mes"},
-  {k:"va", et:"en 12 meses",  th:"12 meses"},
+  {k:"v1", et:texto("en el día"),    th:texto("día")},
+  {k:"vm", et:texto("en el mes"),    th:texto("mes")},
+  {k:"va", et:texto("en 12 meses"),  th:texto("producto12Meses")},
 ].filter(o => (DATOS.productos[D.ciudad]||[]).some(x => x[o.k] != null && isFinite(x[o.k])));
 
 function tablaProd(){
@@ -1116,22 +1390,22 @@ function tablaProd(){
   if(D.division!=="TOTAL") p = p.filter(x=>String(x.d)===D.division);
   p = p.slice().sort((a,b) => b[per.k] - a[per.k]);
 
-  $("#sp").textContent = `Cambio del índice de cada producto ${per.et}`
-    + (D.division==="TOTAL" ? "." : `, dentro de ${DATOS.divisiones[D.division]}.`);
+  $("#sp").textContent = texto("Cambio del índice de cada producto {periodo}", {periodo:per.et})
+    + (D.division==="TOTAL" ? "." : texto(", dentro de {division}.", {division:divisionNom(D.division, DATOS.divisiones[D.division])}));
   if(!p.length){ $("#tp").innerHTML =
-    `<tbody><tr><td class="vacio">Ningún producto se movió acá.</td></tr></tbody>`; return; }
+    `<tbody><tr><td class="vacio">${texto("Ningún producto se movió acá.")}</td></tr></tbody>`; return; }
   const hayDia = p.some(x => x.v1 != null && isFinite(x.v1));
   const tercera = (hayDia && per.k !== "v1")
-    ? {th:"día", cel: x => `<td class="num ${x.v1>=0?"sube":"baja"}">${fmt(x.v1)}</td>`}
-    : {th:"índice", cel: x => `<td class="num" style="color:var(--tinta3)">${fmtN(x.n)}</td>`};
+    ? {th:texto("día"), cel: x => `<td class="num ${x.v1>=0?"sube":"baja"}">${fmt(x.v1)}</td>`}
+    : {th:texto("índice"), cel: x => `<td class="num" style="color:var(--tinta3)">${fmtN(x.n)}</td>`};
 
   const fila = x=>`<tr><td>${x.p}</td>
     <td class="num ${x[per.k]>=0?"sube":"baja"}">${fmt(x[per.k])}</td>
     ${tercera.cel(x)}</tr>`;
-  $("#tp").innerHTML = `<thead><tr><th>Producto</th>
+  $("#tp").innerHTML = `<thead><tr><th>${texto("Producto")}</th>
       <th class="num">${per.th}</th><th class="num">${tercera.th}</th></tr></thead>
     <tbody>${p.slice(0,8).map(fila).join("")}
-      <tr><td colspan="3" class="corte">Los que más bajaron</td></tr>
+      <tr><td colspan="3" class="corte">${texto("Los que más bajaron")}</td></tr>
       ${p.slice(-8).reverse().map(fila).join("")}</tbody>`;
 }
 
@@ -1163,23 +1437,25 @@ let INE9 = null;
 const MAPA = {med:"a12", mes:null, div:"0"};
 const DV = {med:"a12", mes:null, amb:"bolivia"};
 const MEDIDAS = [["men","Mensual"], ["acu","Acumulada"], ["a12","12 meses"]];
+const medidas = () => MEDIDAS.map(([k, etiqueta]) => [k, texto(etiqueta)]);
 const MEDIDA_TXT = {men:"variación mensual", acu:"variación acumulada en el año", a12:"variación a 12 meses"};
 const DEPTO = {chuquisaca:"Chuquisaca", la_paz:"La Paz", cochabamba:"Cochabamba", oruro:"Oruro",
   potosi:"Potosí", tarija:"Tarija", santa_cruz:"Santa Cruz", beni:"Beni", pando:"Pando"};
 const CAPITAL = {chuquisaca:"Sucre", la_paz:"Conurbación La Paz", cochabamba:"Región Metropolitana Kanata",
   oruro:"Oruro", potosi:"Potosí", tarija:"Tarija", santa_cruz:"Conurbación Santa Cruz",
   beni:"Trinidad", pando:"Cobija"};
-const mesLargo = m => new Date(m+"-15T00:00:00").toLocaleDateString("es",{month:"long",year:"numeric"});
-const divTxt = k => k==="0" ? "Índice general" : INE9.divisiones[k];
+const mesLargo = m => new Date(m+"-15T00:00:00").toLocaleDateString(idiomaActual,{month:"long",year:"numeric"});
+const divTxt = k => k==="0" ? texto("Índice general") : divisionNom(k, INE9.divisiones[k]);
 const serie9 = (amb, div, med) => (((INE9.series[amb]||{})[div]||{})[med]) || [];
-const dondeTxt = a => a==="bolivia" ? "Bolivia" : `${DEPTO[a]}${CAPITAL[a]!==DEPTO[a] ? " · "+CAPITAL[a] : ""}`;
+const capitalNom = a => idiomaActual === "en" ? CAPITAL_EN[a] : CAPITAL[a];
+const dondeTxt = a => a==="bolivia" ? "Bolivia" : `${DEPTO[a]}${capitalNom(a)!==DEPTO[a] ? " · "+capitalNom(a) : ""}`;
 
 const pINE9 = traer("ine_departamentos.json");
 pINE9.then(x => { INE9 = x; MAPA.mes = DV.mes = x.fechas.length - 1; armarDivisionesINE(); })
-  .catch(() => { $("#dv-nota").textContent = "no pude cargar el dato del INE"; });
+  .catch(() => { mensaje("#dv-nota", "no pude cargar el dato del INE"); });
 Promise.all([pINE9, traer("departamentos.geojson")])
   .then(([, geo]) => { MAPA.geo = proyectar(geo); armarMapa(); })
-  .catch(() => { $("#mapa-nota").textContent = "no pude cargar el mapa del INE por departamento"; });
+  .catch(() => { mensaje("#mapa-nota", "no pude cargar el mapa del INE por departamento"); });
 
 function rotulo(pts, k){
   const P = pts.map(([x,y]) => [x/k, y]);
@@ -1228,7 +1504,7 @@ function proyectar(geo){
 }
 
 function armarMapa(){
-  armarSeg("#mapa-med", () => MEDIDAS, () => MAPA.med, k => { MAPA.med = k; pintarMapa(); });
+  armarSeg("#mapa-med", () => medidas(), () => MAPA.med, k => { MAPA.med = k; pintarMapa(); });
   armarSel("#mapa-mes",
     () => INE9.fechas.map((f,i) => [i, mesLargo(f), ICONOS.mes]).reverse(),
     () => MAPA.mes, k => { MAPA.mes = +k; SELS.forEach(s=>s.sinc()); pintarMapa(); }).sinc();
@@ -1238,7 +1514,7 @@ function armarMapa(){
 
   const {deptos, caja} = MAPA.geo;
   $("#mapa").innerHTML = `<svg viewBox="${caja.map(v=>v.toFixed(1)).join(" ")}" role="img"
-      aria-label="Mapa de Bolivia por departamento">
+      aria-label="${texto("Mapa de Bolivia por departamento")}" data-i18n-aria="Mapa de Bolivia por departamento">
     ${deptos.map(dp => `<path class="depto" data-id="${dp.id}" d="${dp.d}"></path>`).join("")}
     <path class="contorno" d=""></path>
     ${deptos.map(dp => `<g data-et="${dp.id}">
@@ -1261,7 +1537,7 @@ function armarMapa(){
     marcar(id);
     tip.innerHTML = `<b>${dondeTxt(id)}</b><div style="color:var(--tinta3);margin-top:2px">${
       divTxt(MAPA.div)} · ${mesLargo(INE9.fechas[MAPA.mes])}</div>` +
-      MEDIDAS.map(([k,t]) => `<div class="l">${t} <b>${fmt(serie9(id, MAPA.div, k)[MAPA.mes])}</b></div>`).join("");
+      medidas().map(([k,t]) => `<div class="l">${t} <b>${fmt(serie9(id, MAPA.div, k)[MAPA.mes])}</b></div>`).join("");
     tip.style.opacity = 1;
     tip.style.left = Math.min(e.clientX+16, innerWidth-tip.offsetWidth-10)+"px";
     tip.style.top = Math.max(10, e.clientY-tip.offsetHeight-14)+"px";
@@ -1280,6 +1556,7 @@ function azul(t){
 }
 
 function pintarMapa(){
+  $("#mapa svg").setAttribute("aria-label", texto("Mapa de Bolivia por departamento"));
   const i = MAPA.mes, f = INE9.fechas[i];
   const valor = a => serie9(a, MAPA.div, MAPA.med)[i];
   const filas = Object.keys(DEPTO).map(id => ({id, v:valor(id)}))
@@ -1304,21 +1581,21 @@ function pintarMapa(){
   const max = Math.max(...vs.map(Math.abs), .01);
   const desde = INE9.fechas[serie9("bolivia", "0", MAPA.med).findIndex(v => v!=null)];
   $("#ranking").innerHTML = !filas.length
-    ? `<li style="display:block;text-align:center;color:var(--tinta3);padding:24px 8px">El INE publica la ${
-        MEDIDA_TXT[MAPA.med]} desde ${desde ? mesLargo(desde) : "más adelante"}.</li>`
+    ? `<li style="display:block;text-align:center;color:var(--tinta3);padding:24px 8px">${texto("El INE publica la {medida} desde {fecha}.", {
+        medida:texto(MEDIDA_TXT[MAPA.med]), fecha:desde ? mesLargo(desde) : texto("más adelante")})}</li>`
     : filas.map((x,k) => `<li data-id="${x.id}">
       <span class="n">${k+1}</span>
-      <span class="q"><b>${DEPTO[x.id]}</b>${(INE9.pesos_ciudad || {})[x.id] ? `<span title="peso de la ciudad en el IPC nacional">${INE9.pesos_ciudad[x.id].toFixed(2)}%</span>` : ""}</span>
+      <span class="q"><b>${DEPTO[x.id]}</b>${(INE9.pesos_ciudad || {})[x.id] ? `<span title="${texto("peso de la ciudad en el IPC nacional")}">${INE9.pesos_ciudad[x.id].toFixed(2)}%</span>` : ""}</span>
       <span class="v">${fmt(x.v)}</span>
       <span class="barra"><i class="${x.v<0?"neg":""}" style="width:${(Math.abs(x.v)/max*100).toFixed(1)}%"></i></span>
     </li>`).join("");
 
   const nac = $("#nacional"), vb = valor("bolivia");
-  nac.querySelector(".et").textContent = `Bolivia · ${MEDIDAS.find(m => m[0]===MAPA.med)[1]}`;
+  nac.querySelector(".et").textContent = `Bolivia · ${medidas().find(m => m[0]===MAPA.med)[1]}`;
   nac.querySelector(".v").innerHTML = vb==null ? "—" : `${fmtS(vb)}<small>%</small>`;
   nac.querySelector(".p").textContent = `${divTxt(MAPA.div)} · ${mesLargo(f)}`;
 
-  $("#mapa-nota").textContent = "Fuente: Instituto Nacional de Estadística (INE).";
+  $("#mapa-nota").textContent = texto("Fuente: Instituto Nacional de Estadística (INE).");
 }
 
 const DIV_CORTA = {"1":"Alimentos", "2":"Bebidas alc.", "3":"Ropa y calzado", "4":"Vivienda",
@@ -1328,7 +1605,7 @@ const CIUDAD_CORTA = {chuquisaca:"Sucre", la_paz:"La Paz", cochabamba:"Cochabamb
   potosi:"Potosí", tarija:"Tarija", santa_cruz:"Santa Cruz", beni:"Trinidad", pando:"Cobija"};
 
 function armarDivisionesINE(){
-  armarSeg("#mk-med", () => MEDIDAS, () => DV.med, k => { DV.med = k; pintarDivisionesINE(); });
+  armarSeg("#mk-med", () => medidas(), () => DV.med, k => { DV.med = k; pintarDivisionesINE(); });
   armarSel("#dv-ciudad",
     () => [["bolivia", "Bolivia"]].concat(Object.keys(DEPTO).map(k => [k, CIUDAD_CORTA[k], ICONOS.ciudad])),
     () => DV.amb, k => { DV.amb = k; SELS.forEach(s=>s.sinc()); pintarDivisionesINE(); }).sinc();
@@ -1372,9 +1649,9 @@ function pintarDivisionesINE(){
   const W = svg.clientWidth || svg.parentNode.clientWidth;
   const nombre = a === "bolivia" ? "Bolivia" : CIUDAD_CORTA[a];
   const g = serie9(a, "0", med)[i], gen = $("#dv-gen");
-  gen.querySelector(".et").textContent = `${nombre} · ${MEDIDAS.find(z => z[0] === med)[1]}`;
+  gen.querySelector(".et").textContent = `${nombre} · ${medidas().find(z => z[0] === med)[1]}`;
   gen.querySelector(".v").innerHTML = g == null ? "—" : `${fmtS(g)}<small>%</small>`;
-  gen.querySelector(".p").textContent = `Índice general · ${mesLargo(INE9.fechas[i])}`;
+  gen.querySelector(".p").textContent = `${texto("Índice general")} · ${mesLargo(INE9.fechas[i])}`;
   const pesos = (INE9.pesos || {})[a] || {};
   const filas = Object.keys(INE9.divisiones).filter(k => k !== "0")
     .map(k => ({k, v: serie9(a, k, med)[i], w: pesos[k]}))
@@ -1383,7 +1660,7 @@ function pintarDivisionesINE(){
     const desde = INE9.fechas[serie9(a, "0", med).findIndex(v => v != null)];
     svg.setAttribute("height", 160);
     svg.innerHTML = `<text x="50%" y="45%" text-anchor="middle" font-size="12.5" fill="var(--tinta3)">${
-      desde ? `El INE publica la ${MEDIDA_TXT[med]} desde ${mesLargo(desde)}.` : "Sin dato para este mes."}</text>`;
+      desde ? texto("El INE publica la {medida} desde {fecha}.", {medida:texto(MEDIDA_TXT[med]), fecha:mesLargo(desde)}) : texto("Sin dato para este mes.")}</text>`;
     return; }
   const H = W < 520 ? 560 : 460;
   svg.setAttribute("height", H);
@@ -1404,7 +1681,7 @@ function pintarDivisionesINE(){
       fill="${azul(.22 + .78 * t)}" style="animation-delay:${(n * .03).toFixed(2)}s"/>`;
     if(x.w >= 84 && x.h >= 66){
       s += `<text class="t-nom" x="${cx.toFixed(1)}" y="${(cy - fv * .75).toFixed(1)}" text-anchor="middle"
-          font-size="${Math.min(13, Math.max(10.5, fv * .48)).toFixed(1)}" fill="${tinta2}">${DIV_CORTA[x.k]}</text>
+          font-size="${Math.min(13, Math.max(10.5, fv * .48)).toFixed(1)}" fill="${tinta2}">${idiomaActual === "en" ? DIV_CORTA_EN[x.k] : DIV_CORTA[x.k]}</text>
         <text class="t-num" x="${cx.toFixed(1)}" y="${(cy + fv * .32).toFixed(1)}" text-anchor="middle"
           font-size="${fv.toFixed(1)}" fill="${tinta}">${fmt(x.v)}</text>`;
     } else if(x.w >= 46 && x.h >= 24){
@@ -1422,17 +1699,17 @@ function pintarDivisionesINE(){
     const r = e.target.closest("rect.b");
     if(!r){ tip.style.opacity = 0; return; }
     const x = filas.find(z => z.k === r.dataset.k);
-    tip.innerHTML = `<b>${INE9.divisiones[x.k]}</b>
+    tip.innerHTML = `<b>${divisionNom(x.k, INE9.divisiones[x.k])}</b>
       <div style="color:var(--tinta3);margin-top:2px">${nombre} · ${mesLargo(INE9.fechas[i])}</div>
-      <div class="l">Variación <b>${fmt(x.v)}</b></div>
-      ${pesos[x.k] != null ? `<div class="l">Peso en la canasta <b>${pesos[x.k].toFixed(2)}%</b></div>` : ""}`;
+      <div class="l">${texto("Variación")} <b>${fmt(x.v)}</b></div>
+      ${pesos[x.k] != null ? `<div class="l">${texto("Peso en la canasta")} <b>${pesos[x.k].toFixed(2)}%</b></div>` : ""}`;
     tip.style.opacity = 1;
     tip.style.left = Math.min(e.clientX + 16, innerWidth - tip.offsetWidth - 10) + "px";
     tip.style.top = Math.max(10, e.clientY - tip.offsetHeight - 14) + "px";
   };
   svg.onpointerleave = () => { tip.style.opacity = 0; };
 
-  $("#dv-nota").textContent = "Fuente: Instituto Nacional de Estadística (INE).";
+  $("#dv-nota").textContent = texto("Fuente: Instituto Nacional de Estadística (INE).");
 }
 
 let tmrMk;
@@ -1653,5 +1930,6 @@ let tmr;
 addEventListener("resize", ()=>{ clearTimeout(tmr);
   tmr=setTimeout(()=>{ if(DATOS){ g1();g5();g2();g3(); } }, 120); });
 </script>
+<script data-goatcounter="https://bohozx.goatcounter.com/count" async src="/assets/goatcounter.js"></script>
 </body>
 </html>
