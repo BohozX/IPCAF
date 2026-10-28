@@ -83,6 +83,19 @@ jobs:
             echo "nuevo=no" >> $GITHUB_OUTPUT
           fi
 
+      - name: Mapa por departamento
+        id: mapa
+        continue-on-error: true
+        working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
+        run: |
+          salida=$(python -u codigo/referencia.py --mapa "$GITHUB_WORKSPACE/pagina/ine_departamentos.json")
+          echo "$salida"
+          if echo "$salida" | grep -q '^MAPA$'; then
+            echo "nuevo=si" >> $GITHUB_OUTPUT
+          else
+            echo "nuevo=no" >> $GITHUB_OUTPUT
+          fi
+
       - name: Regenerar la página
         if: steps.buscar.outputs.nuevo == 'si'
         working-directory: private/${{ secrets.IPCAF_CORE_PATH }}
@@ -116,11 +129,16 @@ jobs:
           fi
 
       - name: Publicar
-        if: steps.buscar.outputs.nuevo == 'si'
+        if: steps.buscar.outputs.nuevo == 'si' || steps.mapa.outputs.nuevo == 'si'
         shell: bash
         run: |
           set -euo pipefail
-          cp "private/${{ secrets.IPCAF_CORE_PATH }}/publico/datos.json" pagina/
+          if [ "${{ steps.buscar.outputs.nuevo }}" = "si" ]; then
+            cp "private/${{ secrets.IPCAF_CORE_PATH }}/publico/datos.json" pagina/
+          else
+            curl -fsSL -m 60 -o pagina/datos.json "https://bohozx.github.io/IPCAF/datos.json?$(date -u +%s)"
+            echo "  solo cambió el mapa: se conserva el datos.json publicado"
+          fi
           if curl -fsSL -m 60 -o pagina/revision.json \
                "https://bohozx.github.io/IPCAF/revision.json?$(date -u +%s)"; then
             echo "  se conserva el paquete de revisión que estaba publicado"
@@ -131,16 +149,17 @@ jobs:
           git config user.name "Daniel Bohoz Oros Trujillo"
           git config user.email "283808960+BohozX@users.noreply.github.com"
           git add pagina
-          git diff --cached --quiet || { git commit -m "referencia $(date -u +%Y-%m)"; git push; }
+          git diff --cached --quiet || { git commit -m "referencia $(date -u +%Y-%m)"
+            git push || { git pull --rebase -q origin main && git push; }; }
 
       - uses: actions/configure-pages@v5
-        if: steps.buscar.outputs.nuevo == 'si'
+        if: steps.buscar.outputs.nuevo == 'si' || steps.mapa.outputs.nuevo == 'si'
       - uses: actions/upload-pages-artifact@v3
-        if: steps.buscar.outputs.nuevo == 'si'
+        if: steps.buscar.outputs.nuevo == 'si' || steps.mapa.outputs.nuevo == 'si'
         with:
           path: pagina
       - id: deployment
-        if: steps.buscar.outputs.nuevo == 'si'
+        if: steps.buscar.outputs.nuevo == 'si' || steps.mapa.outputs.nuevo == 'si'
         uses: actions/deploy-pages@v4
 
       - name: Resumen
@@ -150,6 +169,11 @@ jobs:
             echo "### Hay un mes nuevo en la referencia" >> $GITHUB_STEP_SUMMARY
           else
             echo "Sin novedad: la referencia no cambió." >> $GITHUB_STEP_SUMMARY
+          fi
+          if [ "${{ steps.mapa.outputs.nuevo }}" = "si" ]; then
+            echo "### El mapa por departamento trae un mes nuevo" >> $GITHUB_STEP_SUMMARY
+          elif [ "${{ steps.mapa.outcome }}" = "failure" ]; then
+            echo "::warning::el paso del mapa falló; se reintenta mañana"
           fi
 
       - name: Avisar si el vault no se guardó
