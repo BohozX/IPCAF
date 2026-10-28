@@ -1747,7 +1747,7 @@ function portada(){
   }
 
   let cinta = null, cintaAn = 0;
-  const ALTO_CINTA = 44;
+  const ALTO_CINTA = 44, ESTIRA = 1.6, FRANJA_CINTA = ALTO_CINTA * ESTIRA;
   function armarCinta(){
     const paso = 13;
     cintaAn = Math.max(paso * 2, Math.ceil(an / paso + 2) * paso);
@@ -1785,10 +1785,10 @@ function portada(){
     if(cinta){
       cf.globalAlpha = .3;
       const c1 = -((t * 9) % cintaAn), c2 = ((t * 6) % cintaAn) - cintaAn;
-      cf.drawImage(cinta, c1, 3);
-      cf.drawImage(cinta, c1 + cintaAn, 3);
-      cf.drawImage(cinta, c2, al - ALTO_CINTA);
-      cf.drawImage(cinta, c2 + cintaAn, al - ALTO_CINTA);
+      cf.drawImage(cinta, c1, 3, cintaAn, FRANJA_CINTA);
+      cf.drawImage(cinta, c1 + cintaAn, 3, cintaAn, FRANJA_CINTA);
+      cf.drawImage(cinta, c2, al - FRANJA_CINTA, cintaAn, FRANJA_CINTA);
+      cf.drawImage(cinta, c2 + cintaAn, al - FRANJA_CINTA, cintaAn, FRANJA_CINTA);
       cf.globalAlpha = 1;
     }
 
@@ -1921,6 +1921,7 @@ function portada(){
   rehacer();
   let rtmr;
   addEventListener("resize", () => { clearTimeout(rtmr); rtmr = setTimeout(rehacer, 120); });
+  if ("ResizeObserver" in window) new ResizeObserver(() => { clearTimeout(rtmr); rtmr = setTimeout(rehacer, 120); }).observe(zona);
   if(document.fonts && document.fonts.ready) document.fonts.ready.then(rehacer);
   if(!quieto) decidir();
 }
