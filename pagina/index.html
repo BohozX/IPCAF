@@ -227,10 +227,15 @@ h1.grad{animation:brillo 7s ease-in-out infinite alternate}
 @keyframes destello-filete{0%,55%{border-bottom-color:var(--tinta)}100%{border-bottom-color:var(--borde2)}}
 .campo.entra{animation:entrar-columna .42s var(--curva) both}
 .campo.entra .sel-cara{animation:destello-filete .95s var(--curva) both}
-.fechas{display:flex;gap:7px;align-items:center;justify-content:center;font-size:12.5px;color:var(--tinta2)}
-.fechas input{font:inherit;font-size:12.5px;padding:6px 10px;border-radius:9px;border:1px solid var(--borde2);
-  background:var(--panel);color:var(--tinta);color-scheme:dark}
-.fechas input:focus{outline:none;border-color:var(--tinta)}
+#campo-fechas{align-items:center;margin-top:16px}
+.fechas{display:flex;gap:14px;align-items:center;justify-content:center;color:var(--tinta3)}
+.fechas input{font:inherit;font-size:13.5px;font-weight:500;font-variant-numeric:tabular-nums;width:9.6em;
+  padding:6px 2px 6px 8px;border:0;border-bottom:1px solid var(--borde2);border-radius:0;background:none;
+  color:var(--tinta);color-scheme:dark;cursor:pointer;transition:border-color var(--paso) ease}
+.fechas input:hover,.fechas input:focus{outline:none;border-color:var(--azul3)}
+.fechas input::-webkit-calendar-picker-indicator{opacity:.45;cursor:pointer;transition:opacity var(--paso) ease}
+.fechas input:hover::-webkit-calendar-picker-indicator{opacity:.9}
+.campo.entra .fechas input{animation:destello-filete .95s var(--curva) both}
 .aviso{margin:18px 0 0;font-size:13px;color:var(--tinta2);border-left:2px solid var(--tinta);padding-left:12px}
 
 .tablero{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0 6px}
@@ -441,12 +446,13 @@ tbody tr:hover{background:rgba(33,146,196,.07);box-shadow:inset 2px 0 0 var(--az
           <div class="sel" id="refine"></div></div>
         <div class="campo"><span class="etq" data-i18n="Período">Período</span>
           <div class="sel" id="rangos"></div></div>
-        <div class="campo campo-ancho" id="campo-fechas" hidden><span class="etq" data-i18n="Fechas exactas">Fechas exactas</span>
-          <div class="fechas">
-            <input type="date" id="desde" aria-label="desde" data-i18n-aria="desde">
-            <input type="date" id="hasta" aria-label="hasta" data-i18n-aria="hasta">
-          </div></div>
       </div>
+      <div class="campo" id="campo-fechas" hidden><span class="etq" data-i18n="Fechas exactas">Fechas exactas</span>
+        <div class="fechas">
+          <input type="date" id="desde" aria-label="desde" data-i18n-aria="desde">
+          <span aria-hidden="true">–</span>
+          <input type="date" id="hasta" aria-label="hasta" data-i18n-aria="hasta">
+        </div></div>
     </div>
 
     <p class="aviso" id="aviso" hidden></p>
@@ -1021,7 +1027,14 @@ function pintar(){
     campoAmbito.classList.add("entra");
   }
 
-  $("#campo-fechas").hidden = !!D.rango;
+  const campoFechas = $("#campo-fechas");
+  const fechasAntes = !campoFechas.hidden;
+  campoFechas.hidden = !!D.rango;
+  if(!D.rango && !fechasAntes){
+    campoFechas.classList.remove("entra");
+    void campoFechas.offsetWidth;
+    campoFechas.classList.add("entra");
+  }
   $("#perprod").hidden = periodosProd().length < 2;
 
   SELS.forEach(s=>s.sinc());
