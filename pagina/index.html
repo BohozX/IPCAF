@@ -804,12 +804,14 @@ $("#idioma").onclick = e => {
 aplicarTextos();
 
 
-const D = {ciudad:"TRES", division:"TOTAL", metodo:"geometrica",
+const D = {ciudad:"TRES", division:"TOTAL", metodo:"aritmetica",
            ambito:"nacional", refine:"general", desde:null, hasta:null, rango:"12m",
            perProd:"vm"};
 let DATOS = null;
 
 const COLOR = {geometrica:"var(--m0)", intermedia:"var(--m1)", aritmetica:"var(--m2)"};
+const metodoDeVista = () => D.ciudad==="TRES" && D.division==="TOTAL" ? "aritmetica" : "geometrica";
+const reponerMetodo = () => { if(D.metodo!=="todos") D.metodo = metodoDeVista(); };
 
 const fuenteTexto = () => texto("Fuente: Instituto Nacional de Estadística (INE) y estimación propia.");
 const creditoTexto = () => `${fuenteTexto()} · ${texto("Base 1-oct-2024 = 100")} · INE base 2016 = 100`;
@@ -938,12 +940,12 @@ function armarSeg(id, opciones, leer, escribir){
 function arrancar(){
   armarSel("#ciudades",
     () => Object.keys(DATOS.ciudades).map(k => [k, ciudadNom(k), ICONOS.ciudad]),
-    () => D.ciudad, k => { D.ciudad = k; pintar(); });
+    () => D.ciudad, k => { D.ciudad = k; reponerMetodo(); pintar(); });
 
   armarSel("#divisiones",
     () => [["TOTAL", texto("Todas"), ICONOS.TOTAL]].concat(
       Object.entries(DATOS.divisiones).map(([k, v]) => [k, divisionNom(k, v), ICONOS[k]])),
-    () => D.division, k => { D.division = k; pintar(); });
+    () => D.division, k => { D.division = k; reponerMetodo(); pintar(); });
 
   armarSel("#metodos",
     () => Object.keys(DATOS.metodos).map(k => [k, metodoNom(k)]).concat([["todos", texto("Los 3")]]),
@@ -986,14 +988,15 @@ const eje = k => (k==="d12"||k==="d30"||k==="niv"||k==="mtd") ? DATOS.fechas_d :
 const zip = (e,a) => a ? e.map((f,i)=>[f,a[i]]).filter(q=>q[1]!==null) : [];
 const propioDe = (m,k) => { const s=(DATOS.propio[D.ciudad][m]||{})[D.division];
   return s ? zip(eje(k), s[k]) : []; };
-const base = () => D.metodo==="todos" ? "geometrica" : D.metodo;
+const base = () => D.metodo==="todos" ? metodoDeVista() : D.metodo;
 const propio = k => propioDe(base(), k);
 const serieINE = () => (D.division==="TOTAL" && D.refine==="general") ? "GENERAL" : D.division;
 const fuenteINE = () => (D.ambito==="nacional" && DATOS.ine_nacional)
   ? DATOS.ine_nacional : (DATOS.ine[D.ciudad] || {});
 const ine = k => zip(DATOS.fechas_m, (fuenteINE()[serieINE()] || {})[k]);
 const ult = a => a.length ? a[a.length-1] : [null,null];
-const visibles = () => D.metodo==="todos" ? Object.keys(DATOS.metodos) : [D.metodo];
+const visibles = () => D.metodo==="todos"
+  ? [base()].concat(Object.keys(DATOS.metodos).filter(m => m!==base())) : [D.metodo];
 
 const etqINE = () => {
   const donde = D.ambito==="nacional" ? "Bolivia" : ciudadNom(D.ciudad);
