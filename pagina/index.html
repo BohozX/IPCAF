@@ -238,9 +238,11 @@ h1.grad{animation:brillo 7s ease-in-out infinite alternate}
 .campo.entra .fechas input{animation:destello-filete .95s var(--curva) both}
 .aviso{margin:18px 0 0;font-size:13px;color:var(--tinta2);border-left:2px solid var(--tinta);padding-left:12px}
 
-.tablero{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px;margin:18px 0 6px}
-@media (max-width:900px){.tablero{grid-template-columns:repeat(2,minmax(0,1fr))}}
-@media (max-width:520px){.tablero{grid-template-columns:1fr}}
+.tablero{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:14px;margin:18px 0 6px}
+.tablero .tj{grid-column:span 2}
+.tablero .tj:nth-child(n+4){grid-column:span 3}
+@media (max-width:900px){.tablero{grid-template-columns:repeat(2,minmax(0,1fr))}.tablero .tj,.tablero .tj:nth-child(n+4){grid-column:auto}.tablero .tj:nth-child(5){grid-column:1/-1}}
+@media (max-width:520px){.tablero{grid-template-columns:1fr}.tablero .tj:nth-child(5){grid-column:auto}}
 .tj{position:relative;padding:18px 18px 18px;border-radius:16px;text-align:center;
   background:linear-gradient(180deg,rgba(255,255,255,.05),rgba(255,255,255,.015));
   border:1px solid var(--borde);box-shadow:inset 0 1px 0 rgba(255,255,255,.12);
@@ -583,7 +585,6 @@ const TEXTOS = {
     "Productos que se movieron": "Productos que se movieron",
     "índice general (12 divisiones)": "índice general (12 divisiones)",
     "mismas {n} divisiones": "mismas {n} divisiones",
-    "12 meses, día a día": "12 meses, día a día",
     "en lo que va de {mes}": "en lo que va de {mes}",
     "mes de {mes}": "mes de {mes}",
     "acumulado desde el cierre anterior · <b>provisional</b>": "acumulado desde el cierre anterior · <b>provisional</b>",
@@ -594,8 +595,8 @@ const TEXTOS = {
     "cierre contra cierre, como el INE": "cierre contra cierre, como el INE",
     "brecha": "brecha",
     "mes en curso: mide menos de 365 días": "mes en curso: mide menos de 365 días",
-    "IPCAF · mes anterior": "IPCAF · mes anterior",
-    "al <b>{fecha}</b>": "al <b>{fecha}</b>",
+    "IPCAF · 12 meses · mes cerrado": "IPCAF · 12 meses · mes cerrado",
+    "a <b>{fecha}</b>": "a <b>{fecha}</b>",
     " · a <b>{fecha}</b>": " · a <b>{fecha}</b>",
     "mensual": "mensual",
     "No hay divisiones acá.": "No hay divisiones acá.",
@@ -697,7 +698,6 @@ const TEXTOS = {
     "Productos que se movieron": "Products that moved",
     "índice general (12 divisiones)": "general index (12 divisions)",
     "mismas {n} divisiones": "same {n} divisions",
-    "12 meses, día a día": "12-month, day by day",
     "en lo que va de {mes}": "{mes} to date",
     "mes de {mes}": "{mes}",
     "acumulado desde el cierre anterior · <b>provisional</b>": "since the previous close · <b>provisional</b>",
@@ -708,8 +708,8 @@ const TEXTOS = {
     "cierre contra cierre, como el INE": "close to close, like the INE",
     "brecha": "gap",
     "mes en curso: mide menos de 365 días": "month in progress: covers fewer than 365 days",
-    "IPCAF · mes anterior": "IPCAF · previous month",
-    "al <b>{fecha}</b>": "as of <b>{fecha}</b>",
+    "IPCAF · 12 meses · mes cerrado": "IPCAF · 12-month · closed month",
+    "a <b>{fecha}</b>": "as of <b>{fecha}</b>",
     " · a <b>{fecha}</b>": " · as of <b>{fecha}</b>",
     "mensual": "monthly",
     "No hay divisiones acá.": "No divisions here.",
@@ -1050,24 +1050,19 @@ const nombreMes = f => f
   ? dia(f).toLocaleDateString(idiomaActual,{month:"long",year:"numeric"}) : null;
 
 function tarjetas(){
-  const sD12  = enR(propio("d12"));
   const sMen  = enR(propio("men"));
   const sA12  = enR(propio("a12"));
   const sIneA = enR(ine("a12"));
   const sIneM = enR(ine("men"));
 
-  const d12=ult(sD12), a12=ult(sA12), iA=ult(sIneA), iM=ult(sIneM), men=ult(sMen);
-  const br = (a12[1]!=null && iA[1]!=null) ? a12[1]-iA[1] : null;
+  const a12=ult(sA12), iA=ult(sIneA), iM=ult(sIneM), men=ult(sMen);
 
   const cerrado = DATOS.ultimo_cerrado;
   const enCurso = men[0] && cerrado && men[0] > cerrado;
   const mesNom = men[0] ? dia(men[0]).toLocaleDateString(idiomaActual,{month:"long"}) : "";
-  const sMenCerr = cerrado ? sMen.filter(q => q[0] <= cerrado) : sMen;
-  const mesPrev = ult(sMenCerr);
-
-  const fechaD12 = d12[0]
-    ? dia(d12[0]).toLocaleDateString(idiomaActual,{day:"numeric",month:"long",year:"numeric"})
-    : "—";
+  const a12C = ult(cerrado ? sA12.filter(q => q[0] <= cerrado) : sA12);
+  const iC = sIneA.find(q => q[0] === a12C[0]);
+  const br = (a12C[1]!=null && iC && iC[1]!=null) ? a12C[1]-iC[1] : null;
 
   const cifra = (v, unidad="%") =>
     `<div class="n"><span class="v" data-v="${
@@ -1075,14 +1070,20 @@ function tarjetas(){
       ><span class="u">${unidad}</span></div>`;
 
   $("#tarjetas").innerHTML = `
-    <div class="tj foco"><div class="et">${texto("12 meses, día a día")}</div>
-      ${cifra(d12[1])}
-      <div class="p">${texto("al <b>{fecha}</b>", {fecha:fechaD12})}</div></div>
+    <div class="tj foco"><div class="et">${texto("IPCAF · 12 meses comparable")}</div>
+      ${cifra(a12[1])}
+      <div class="p">${texto("cierre contra cierre, como el INE")}${
+        enCurso ? `<span class="q">${texto("mes en curso: mide menos de 365 días")}</span>` : ""}</div></div>
 
     <div class="tj"><div class="et">${enCurso ? texto("en lo que va de {mes}", {mes:mesNom}) : texto("mes de {mes}", {mes:mesNom})}</div>
       ${cifra(men[1])}
       <div class="p">${enCurso ? texto("acumulado desde el cierre anterior · <b>provisional</b>")
                                : texto("mes cerrado")}</div></div>
+
+    <div class="tj"><div class="et">${texto("IPCAF · 12 meses · mes cerrado")}</div>
+      ${cifra(a12C[1])}
+      <div class="p">${nombreMes(a12C[0]) ? texto("a <b>{fecha}</b>", {fecha:nombreMes(a12C[0])}) : "—"}${
+        br!=null ? ` · ${texto("brecha")} <b>${fmtS(br)} pp</b>` : ""}</div></div>
 
     <div class="tj"><div class="et">${texto("INE oficial · 12 meses")}</div>
       ${cifra(iA[1])}
@@ -1092,17 +1093,7 @@ function tarjetas(){
     <div class="tj"><div class="et">${texto("INE oficial · mensual")}</div>
       ${cifra(iM[1])}
       <div class="p">${nombreMes(iM[0]) ? texto("mes de {mes}", {mes:`<b>${nombreMes(iM[0])}</b>`}) : "—"}</div></div>
-
-    <div class="tj"><div class="et">${texto("IPCAF · 12 meses comparable")}</div>
-      ${cifra(a12[1])}
-      <div class="p">${texto("cierre contra cierre, como el INE")}${
-        br!=null ? ` · ${texto("brecha")} <b>${fmtS(br)} pp</b>` : ""}${
-        enCurso ? `<span class="q">${texto("mes en curso: mide menos de 365 días")}</span>` : ""}</div></div>
-
-    <div class="tj"><div class="et">${texto("IPCAF · mes anterior")}</div>
-      ${cifra(mesPrev[1])}
-      <div class="p">${nombreMes(mesPrev[0])
-        ? texto("mes de {mes}", {mes:`<b>${nombreMes(mesPrev[0])}</b>`}) : "—"}</div></div>`;
+`;
   animarCifras(".tj .n .v[data-v]");
 }
 
