@@ -1,0 +1,57 @@
+name: IPCAF · publicar solo la página
+
+
+on:
+  workflow_dispatch:
+
+concurrency:
+  group: ipcaf-main
+  cancel-in-progress: false
+
+permissions:
+  contents: read
+  id-token: write
+  pages: write
+
+jobs:
+  pagina:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          ref: main
+          persist-credentials: false
+
+      - name: Conservar lo publicado
+        shell: bash
+        run: |
+          set -euo pipefail
+          sitio="https://bohozx.github.io/IPCAF"
+          sello=$(date -u +%s)
+          curl -fsSL -m 60 --retry 3 -o pagina/datos.json "$sitio/datos.json?$sello"
+          jq -e '.fechas_d | length > 0' pagina/datos.json > /dev/null
+          echo "se conserva el datos.json publicado (último día $(jq -r '.fechas_d[-1]' pagina/datos.json))"
+          codigo=$(curl -sS -m 60 --retry 3 -o pagina/revision.json -w '%{http_code}' "$sitio/revision.json?$sello")
+          case "$codigo" in
+            200)
+              jq -e '.salt and .iv and .ct and .iter' pagina/revision.json > /dev/null
+              echo "se conserva el paquete de revisión publicado" ;;
+            404)
+              rm -f pagina/revision.json
+              echo "no había paquete de revisión publicado" ;;
+            *)
+              echo "::error::revision.json respondió $codigo; no se publica para no perder el paquete"
+              exit 1 ;;
+          esac
+
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
+        with:
+          path: pagina
+      - id: deployment
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
