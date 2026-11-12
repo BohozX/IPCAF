@@ -31,12 +31,14 @@ jobs:
     if: github.event_name != 'schedule' || vars.IPCAF_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 5
+    permissions:
+      contents: read
     outputs:
       seguir: ${{ steps.cerrado.outputs.seguir }}
 
     steps:
       - name: Checkout repositorio público
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: main
 
@@ -113,12 +115,12 @@ jobs:
 
     steps:
       - name: Checkout repositorio público
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           ref: main
 
       - name: Checkout Core privado
-        uses: actions/checkout@v4
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         with:
           repository: ${{ secrets.DEV_VAULT_REPOSITORY }}
           ref: main
@@ -151,7 +153,7 @@ jobs:
           test -f "private/$CORE_PATH/codigo/ipcaf.py"
           echo "core en private/$CORE_PATH"
 
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065
         with:
           python-version: '3.12'
           cache: pip
@@ -303,8 +305,6 @@ jobs:
               echo "\`DEV_VAULT_PR_TOKEN\`. Aprobar es fusionar esa rama a \`main\`:"
               echo ""
               echo "https://github.com/${{ secrets.DEV_VAULT_REPOSITORY }}/compare/main...$rama"
-              echo ""
-              cat cuerpo.md
             } >> $GITHUB_STEP_SUMMARY
           fi
 
@@ -377,12 +377,12 @@ jobs:
             git push
           fi
 
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b
+      - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa
         with:
           path: pagina
       - id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@d6db90164ac5ed86f2b6aed7e0febac5b3c0c03e
 
       - name: Resumen
         if: always()

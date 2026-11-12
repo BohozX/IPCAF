@@ -142,6 +142,7 @@ option{background:#0d1117;color:var(--tinta)}
 
 <script>
 const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c]);
 const VAULT = "BohozX/Dev-Vault";
 const FUERA = "(NO VA)";
 const NO_VA = "__NO__";
@@ -216,7 +217,7 @@ function visibles(){
 
 function opciones(sel, lista, elegido){
   sel.innerHTML = lista.map(v =>
-    `<option value="${v.replace(/"/g,"&quot;")}"${v===elegido?" selected":""}>${v}</option>`).join("");
+    `<option value="${esc(v)}"${v===elegido?" selected":""}>${esc(v)}</option>`).join("");
 }
 
 function pintar(){
@@ -231,20 +232,20 @@ function pintar(){
     const f = document.createElement("div");
     f.className = "ficha" + (esNo ? " fuera" : "");
     f.innerHTML = `
-      <div class="nombre">${x.p}</div>
-      <div class="meta">${x.c}${x.cat ? " · " + x.cat : ""} ·
-        el modelo propuso <b>${x.ine}</b>${x.conf!=null ? ` (${Math.round(x.conf*100)}%)` : ""}</div>
+      <div class="nombre">${esc(x.p)}</div>
+      <div class="meta">${esc(x.c)}${x.cat ? " · " + esc(x.cat) : ""} ·
+        el modelo propuso <b>${esc(x.ine)}</b>${x.conf!=null ? ` (${Math.round(x.conf*100)}%)` : ""}</div>
       <div class="fila">
         <div><span class="et">Producto del INE</span>
-          <select class="sel" data-p="${x.id}"></select></div>
+          <select class="sel" data-p="${esc(x.id)}"></select></div>
         <div><span class="et">Variedad</span>
-          <select class="sel" data-v="${x.id}"></select></div>
+          <select class="sel" data-v="${esc(x.id)}"></select></div>
       </div>
-      <div class="codigo" data-c="${x.id}"></div>
-      <div class="sug" data-s="${x.id}"></div>`;
+      <div class="codigo" data-c="${esc(x.id)}"></div>
+      <div class="sug" data-s="${esc(x.id)}"></div>`;
     $("#lista").appendChild(f);
 
-    const selP = f.querySelector(`[data-p="${x.id}"]`);
+    const selP = f.querySelector("[data-p]");
     opciones(selP, [NO_VA].concat(PRODUCTOS()), d.ine);
     selP.querySelector(`option[value="${NO_VA}"]`).textContent = "— no va a la canasta —";
     selP.onchange = () => {
@@ -254,7 +255,7 @@ function pintar(){
       pintar();
     };
 
-    const selV = f.querySelector(`[data-v="${x.id}"]`);
+    const selV = f.querySelector("[data-v]");
     const vs = info.vars || [];
     if(esNo || vs.length === 0){
       selV.innerHTML = `<option>—</option>`;
@@ -265,12 +266,12 @@ function pintar(){
       selV.onchange = () => { decision[x.id].variedad = selV.value; };
     }
 
-    f.querySelector(`[data-c="${x.id}"]`).innerHTML = esNo
+    f.querySelector("[data-c]").innerHTML = esNo
       ? "Queda registrado como que no entra a la canasta."
-      : `Código <b class="mono">${info.cod ?? "—"}</b> · división <b>${info.div ?? "—"}</b>
+      : `Código <b class="mono">${esc(info.cod ?? "—")}</b> · división <b>${esc(info.div ?? "—")}</b>
          <span style="color:var(--tinta3)">— salen solos del producto elegido</span>`;
 
-    const sug = f.querySelector(`[data-s="${x.id}"]`);
+    const sug = f.querySelector("[data-s]");
     if(x.alt && x.alt !== d.ine && D.catalogo[x.alt]){
       sug.innerHTML = `<span>el modelo también consideró:</span>`;
       const b = document.createElement("button");

@@ -768,7 +768,7 @@ const texto = (clave, valores={}) => TEXTOS[idiomaActual][clave].replace(/\{(\w+
 const DIV_EN = {"0": "General index", "1": "Food and non-alcoholic beverages", "2": "Alcoholic beverages and tobacco", "3": "Clothing and footwear", "4": "Housing and utilities", "5": "Furnishings and household goods and services", "6": "Health", "7": "Transport", "8": "Communications", "9": "Recreation and culture", "10": "Education", "11": "Food and drink away from home", "12": "Miscellaneous goods and services"};
 const DIV_CORTA_EN = {"1": "Food", "2": "Alcohol and tobacco", "3": "Clothing", "4": "Housing", "5": "Household", "6": "Health", "7": "Transport", "8": "Communications", "9": "Recreation", "10": "Education", "11": "Restaurants", "12": "Miscellaneous"};
 const CAPITAL_EN = {"chuquisaca": "Sucre", "la_paz": "La Paz metro area", "cochabamba": "Kanata Metropolitan Region", "oruro": "Oruro", "potosi": "Potosí", "tarija": "Tarija", "santa_cruz": "Santa Cruz metro area", "beni": "Trinidad", "pando": "Cobija"};
-const divisionNom = (k, original) => idiomaActual === "en" ? DIV_EN[k] : original;
+const divisionNom = (k, original) => limpio(idiomaActual === "en" ? DIV_EN[k] : original);
 const metodoNom = k => DATOS.metodos[k];
 function aplicarTextos(){
   document.documentElement.lang = idiomaActual;
