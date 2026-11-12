@@ -147,8 +147,8 @@ const VAULT = "BohozX/Dev-Vault";
 const FUERA = "(NO VA)";
 const NO_VA = "__NO__";
 
-let D = null;                 // el paquete descifrado
-let decision = {};            // id -> {ine, variedad}
+let D = null;
+let decision = {};
 let soloPiden = true;
 
 const deB64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
@@ -187,7 +187,7 @@ async function abrir(){
 $("#abrir").onclick = abrir;
 $("#clave").onkeydown = e => { if(e.key === "Enter") abrir(); };
 
-(() => {                       // si ya la guardaste, se prueba sola
+(() => {
   let g = null;
   try{ g = localStorage.getItem("ipcaf-clave"); }catch(e){}
   if(g){ $("#clave").value = g; $("#recordar").checked = true; abrir(); }

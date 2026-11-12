@@ -3,7 +3,7 @@ name: Referencia mensual
 
 on:
   schedule:
-    - cron: '23 13 * * *'   # 09:30 en Bolivia, antes del índice
+    - cron: '23 13 * * *'
   workflow_dispatch:
     inputs:
       forzar:

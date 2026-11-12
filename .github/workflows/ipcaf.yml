@@ -13,13 +13,13 @@ on:
         type: boolean
         default: false
   schedule:
-    - cron: '7 15 * * *'   # 11:00 en Bolivia (UTC-4)
-    - cron: '7 18 * * *'   # 14:00
-    - cron: '7 21 * * *'   # 17:00  -> este cae al upstream si hace falta
+    - cron: '7 15 * * *'
+    - cron: '7 18 * * *'
+    - cron: '7 21 * * *'
 
 concurrency:
   group: ipcaf-main
-  cancel-in-progress: false    # dos corridas no deben tocar el histórico a la vez
+  cancel-in-progress: false
 
 permissions:
   contents: write

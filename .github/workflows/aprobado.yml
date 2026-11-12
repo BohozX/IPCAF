@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 concurrency:
-  group: ipcaf-main          # el mismo que el diario: nunca los dos a la vez
+  group: ipcaf-main
   cancel-in-progress: false
 
 permissions:
