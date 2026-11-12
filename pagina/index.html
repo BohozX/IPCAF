@@ -596,6 +596,7 @@ const TEXTOS = {
     "IPCAF · 12 meses · mes cerrado": "IPCAF · 12 meses · mes cerrado",
     "IPCAF · mes anterior": "IPCAF · mes anterior",
     "a <b>{fecha}</b>": "a <b>{fecha}</b>",
+    "al <b>{fecha}</b>": "al <b>{fecha}</b>",
     " · a <b>{fecha}</b>": " · a <b>{fecha}</b>",
     "mensual": "mensual",
     "No hay divisiones acá.": "No hay divisiones acá.",
@@ -710,6 +711,7 @@ const TEXTOS = {
     "IPCAF · 12 meses · mes cerrado": "IPCAF · 12-month · closed month",
     "IPCAF · mes anterior": "IPCAF · previous month",
     "a <b>{fecha}</b>": "as of <b>{fecha}</b>",
+    "al <b>{fecha}</b>": "as of <b>{fecha}</b>",
     " · a <b>{fecha}</b>": " · as of <b>{fecha}</b>",
     "mensual": "monthly",
     "No hay divisiones acá.": "No divisions here.",
@@ -1064,6 +1066,8 @@ function tarjetas(){
   const mesPrev = ult(cerrado ? sMen.filter(q => q[0] <= cerrado) : sMen);
   const iC = sIneA.find(q => q[0] === a12C[0]);
   const br = (a12C[1]!=null && iC && iC[1]!=null) ? a12C[1]-iC[1] : null;
+  const fechaA12 = a12[0]
+    ? dia(a12[0]).toLocaleDateString(idiomaActual,{day:"numeric",month:"long",year:"numeric"}) : null;
 
   const cifra = (v, unidad="%") =>
     `<div class="n"><span class="v" data-v="${
@@ -1073,7 +1077,7 @@ function tarjetas(){
   $("#tarjetas").innerHTML = `
     <div class="tj foco"><div class="et">${texto("IPCAF · 12 meses comparable")}</div>
       ${cifra(a12[1])}
-      <div class="p">${texto("cierre contra cierre, como el INE")}${
+      <div class="p">${fechaA12 ? texto("al <b>{fecha}</b>", {fecha:fechaA12}) + "<br>" : ""}${texto("cierre contra cierre, como el INE")}${
         enCurso ? `<span class="q">${texto("mes en curso: mide menos de 365 días")}</span>` : ""}</div></div>
 
     <div class="tj"><div class="et">${texto("IPCAF · 12 meses · mes cerrado")}</div>
