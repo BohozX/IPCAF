@@ -68,7 +68,13 @@ input[type=checkbox]{accent-color:var(--acento)}
 .ficha{background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.012));
   border:1px solid var(--borde);border-radius:16px;padding:18px 20px;margin-top:12px}
 .ficha.decidida{border-color:var(--ok)}
-.ficha.fuera{opacity:.5}
+.ficha.fuera>:not(.cab),.ficha.fuera .cab>div{opacity:.5}
+.cab{display:flex;gap:12px;align-items:flex-start;justify-content:space-between}
+.cab>div{min-width:0;overflow-wrap:break-word}
+.nova{flex:none;font:inherit;font-size:12.5px;font-weight:600;padding:6px 13px;border-radius:8px;cursor:pointer;
+  border:1px solid rgba(255,123,114,.5);background:rgba(255,123,114,.1);color:var(--mal)}
+.nova:hover{border-color:var(--mal)}
+.nova.deshacer{border-color:var(--borde2);background:rgba(255,255,255,.05);color:var(--tinta)}
 .nombre{font-weight:600;font-size:15px;line-height:1.35}
 .meta{font-size:12px;color:var(--tinta3);margin-top:4px}
 .meta b{color:var(--acento2);font-weight:500}
@@ -149,6 +155,7 @@ const NO_VA = "__NO__";
 
 let D = null;
 let decision = {};
+let antes = {};
 let soloPiden = true;
 
 const deB64 = s => Uint8Array.from(atob(s), c => c.charCodeAt(0));
@@ -232,9 +239,12 @@ function pintar(){
     const f = document.createElement("div");
     f.className = "ficha" + (esNo ? " fuera" : "");
     f.innerHTML = `
+      <div class="cab"><div>
       <div class="nombre">${esc(x.p)}</div>
       <div class="meta">${esc(x.c)}${x.cat ? " · " + esc(x.cat) : ""} ·
         el modelo propuso <b>${esc(x.ine)}</b>${x.conf!=null ? ` (${Math.round(x.conf*100)}%)` : ""}</div>
+      </div>${!esNo ? `<button class="nova" data-n="${esc(x.id)}">No va</button>`
+        : antes[x.id] ? `<button class="nova deshacer" data-n="${esc(x.id)}">Deshacer</button>` : ""}</div>
       <div class="fila">
         <div><span class="et">Producto del INE</span>
           <select class="sel" data-p="${esc(x.id)}"></select></div>
@@ -245,10 +255,23 @@ function pintar(){
       <div class="sug" data-s="${esc(x.id)}"></div>`;
     $("#lista").appendChild(f);
 
+    const nova = f.querySelector("[data-n]");
+    if(nova) nova.onclick = () => {
+      if(esNo){
+        decision[x.id] = antes[x.id];
+        delete antes[x.id];
+      }else{
+        antes[x.id] = {...d};
+        decision[x.id] = {ine: NO_VA, variedad: undefined};
+      }
+      pintar();
+    };
+
     const selP = f.querySelector("[data-p]");
     opciones(selP, [NO_VA].concat(PRODUCTOS()), d.ine);
     selP.querySelector(`option[value="${NO_VA}"]`).textContent = "— no va a la canasta —";
     selP.onchange = () => {
+      delete antes[x.id];
       decision[x.id].ine = selP.value;
       const vs = (D.catalogo[selP.value] || {}).vars || [];
       decision[x.id].variedad = vs.includes(decision[x.id].variedad) ? decision[x.id].variedad : vs[0];
