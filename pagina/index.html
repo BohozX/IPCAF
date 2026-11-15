@@ -592,7 +592,7 @@ const TEXTOS = {
     "IPCAF · 12 meses comparable": "IPCAF · 12 meses comparable",
     "cierre contra cierre, como el INE": "cierre contra cierre, como el INE",
     "brecha": "brecha",
-    "mes en curso: mide menos de 365 días": "mes en curso: mide menos de 365 días",
+    "mes en curso": "mes en curso",
     "IPCAF · 12 meses · mes cerrado": "IPCAF · 12 meses · mes cerrado",
     "IPCAF · mes anterior": "IPCAF · mes anterior",
     "a <b>{fecha}</b>": "a <b>{fecha}</b>",
@@ -707,7 +707,7 @@ const TEXTOS = {
     "IPCAF · 12 meses comparable": "IPCAF · comparable 12-month",
     "cierre contra cierre, como el INE": "close to close, like the INE",
     "brecha": "gap",
-    "mes en curso: mide menos de 365 días": "month in progress: covers fewer than 365 days",
+    "mes en curso": "month in progress",
     "IPCAF · 12 meses · mes cerrado": "IPCAF · 12-month · closed month",
     "IPCAF · mes anterior": "IPCAF · previous month",
     "a <b>{fecha}</b>": "as of <b>{fecha}</b>",
@@ -1078,7 +1078,7 @@ function tarjetas(){
     <div class="tj foco"><div class="et">${texto("IPCAF · 12 meses comparable")}</div>
       ${cifra(a12[1])}
       <div class="p">${fechaA12 ? texto("al <b>{fecha}</b>", {fecha:fechaA12}) + "<br>" : ""}${texto("cierre contra cierre, como el INE")}${
-        enCurso ? `<span class="q">${texto("mes en curso: mide menos de 365 días")}</span>` : ""}</div></div>
+        enCurso ? `<span class="q">${texto("mes en curso")}</span>` : ""}</div></div>
 
     <div class="tj"><div class="et">${texto("IPCAF · 12 meses · mes cerrado")}</div>
       ${cifra(a12C[1])}
