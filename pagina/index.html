@@ -835,9 +835,12 @@ function creditos(){
 const limpio = t => (t || "").replace(/\s+/g, " ").trim()
   .replace(/[<>&]/g, c => ({"<":"&lt;", ">":"&gt;", "&":"&amp;"}[c]));
 
-const fmt = (v,n=2) => v==null||!isFinite(v) ? "—" : (v>=0?"+":"−")+Math.abs(v).toFixed(n)+"%";
-const fmtS = (v,n=2) => v==null||!isFinite(v) ? "—" : (v>=0?"+":"−")+Math.abs(v).toFixed(n);
-const fmtN = (v,n=2) => v==null||!isFinite(v) ? "—" : v.toFixed(n);
+const FIJOS = {};
+const fijo = (v,n) => (FIJOS[n] ??= new Intl.NumberFormat("en-US",
+  {minimumFractionDigits:n, maximumFractionDigits:n, useGrouping:false})).format(v);
+const fmt = (v,n=2) => v==null||!isFinite(v) ? "—" : (v>=0?"+":"−")+fijo(Math.abs(v),n)+"%";
+const fmtS = (v,n=2) => v==null||!isFinite(v) ? "—" : (v>=0?"+":"−")+fijo(Math.abs(v),n);
+const fmtN = (v,n=2) => v==null||!isFinite(v) ? "—" : fijo(v,n);
 const dia = f => new Date(f+"T00:00:00");
 
 traer("datos.json").then(d=>{DATOS=d; arrancar();})
