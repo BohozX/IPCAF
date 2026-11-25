@@ -56,6 +56,20 @@ jobs:
             exit 0
           fi
 
+          hora=$(date -u -d '-4 hours' +%H:%M)
+          if [ $((10#${hora%%:*})) -lt 10 ]; then
+            echo "seguir=no" >> $GITHUB_OUTPUT
+            echo "corrida programada atrasada: son las $hora en Bolivia y el día $hoy no se baja antes de las 10:00; la captura la hace la corrida de las 11"
+            {
+              echo "### No se baja el día $hoy"
+              echo
+              echo "Corrida programada atrasada: llegó a las $hora de Bolivia."
+              echo "Antes de las 10:00 la tienda todavía no cargó los precios del día,"
+              echo "así que no se baja nada. La captura la hace la corrida de las 11."
+            } >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+
           sitio="https://bohozx.github.io/IPCAF"
           sello=$(date -u +%s)
           falta=""
